@@ -24,9 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\codeql.yml = .github\workflows\codeql.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtd.Kiosk.Core", "Mtd.Kiosk.Core\Mtd.Kiosk.Core.csproj", "{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mtd.Kiosk.Core", "Mtd.Kiosk.Core\Mtd.Kiosk.Core.csproj", "{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtd.Kiosk.Infrastructure.EfCore", "Mtd.Kiosk.Infrastructure.EfCore\Mtd.Kiosk.Infrastructure.EfCore.csproj", "{56041F80-F946-4DDC-8EF4-15ADFC367044}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mtd.Kiosk.Infrastructure.EfCore", "Mtd.Kiosk.Infrastructure.EfCore\Mtd.Kiosk.Infrastructure.EfCore.csproj", "{56041F80-F946-4DDC-8EF4-15ADFC367044}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtd.Kiosk.RealTime", "Mtd.Kiosk.RealTime\Mtd.Kiosk.RealTime.csproj", "{49B6AE4D-00BF-4FF5-BC15-480DBCB66317}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +48,10 @@ Global
 		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B6AE4D-00BF-4FF5-BC15-480DBCB66317}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B6AE4D-00BF-4FF5-BC15-480DBCB66317}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B6AE4D-00BF-4FF5-BC15-480DBCB66317}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B6AE4D-00BF-4FF5-BC15-480DBCB66317}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
