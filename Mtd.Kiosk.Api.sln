@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mtd.Kiosk.Api", "Mtd.Kiosk.Api\Mtd.Kiosk.Api.csproj", "{809CC8C1-C73E-4821-99D2-839DB75896DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{423EA2B3-0CA3-4BBB-852B-F0906D78F906}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Directory.Packages.props = Directory.Packages.props
+		icon.png = icon.png
+		nuget.config = nuget.config
+		readme.md = readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{941F11E8-3256-4307-A506-8FF6329AE405}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{83FD314B-933D-4A16-8EC0-48707852652C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-test.yml = .github\workflows\build-test.yml
+		.github\workflows\codeql.yml = .github\workflows\codeql.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtd.Kiosk.Core", "Mtd.Kiosk.Core\Mtd.Kiosk.Core.csproj", "{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mtd.Kiosk.Infrastructure.EfCore", "Mtd.Kiosk.Infrastructure.EfCore\Mtd.Kiosk.Infrastructure.EfCore.csproj", "{56041F80-F946-4DDC-8EF4-15ADFC367044}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{809CC8C1-C73E-4821-99D2-839DB75896DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{809CC8C1-C73E-4821-99D2-839DB75896DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{809CC8C1-C73E-4821-99D2-839DB75896DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{809CC8C1-C73E-4821-99D2-839DB75896DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F10DB38C-67ED-40FB-B336-B3FBBA061D6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56041F80-F946-4DDC-8EF4-15ADFC367044}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{83FD314B-933D-4A16-8EC0-48707852652C} = {941F11E8-3256-4307-A506-8FF6329AE405}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E7D490B-C361-4E58-AAA9-276DD4CF06B9}
+	EndGlobalSection
+EndGlobal

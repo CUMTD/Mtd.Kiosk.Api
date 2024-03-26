@@ -1,0 +1,6 @@
+@Mtd.Kiosk.Api_HostAddress = http://localhost:5010
+
+GET {{Mtd.Kiosk.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
