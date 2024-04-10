@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <UserSecretsId>4e2755bd-194b-4426-ae51-e68fa4322222</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +17,8 @@
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
     <PackageReference Include="Mtd.Core" />
     <PackageReference Include="Polly.Extensions.Http" />
+    <PackageReference Include="Seq.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>

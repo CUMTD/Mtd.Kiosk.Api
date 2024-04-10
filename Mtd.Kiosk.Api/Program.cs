@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Mtd.Kiosk.Api.Config;
-using Mtd.Kiosk.Core.Entities;
-using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
-using Mtd.Kiosk.Infrastructure.EfCore.Repository;
 using Mtd.Kiosk.RealTime;
 using Polly;
 using Polly.Extensions.Http;
@@ -12,13 +9,41 @@ using Polly.Timeout;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddUserSecrets<Program>();
+
 // Add services to the container.
 
 builder.Services.AddControllers();
 
+builder.Services.AddCors(options => options.AddPolicy(
+	"AllowDashboard",
+		policy => policy.WithOrigins("https://localhost:3000")
+			.WithOrigins("http://localhost:3000")
+			.AllowAnyHeader()
+			.AllowAnyMethod()));
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+
+var config = builder.Configuration.Get<ConnectionStrings>();
+if (config != default)
+{
+	_ = builder.Services.AddSingleton(config);
+}
+
+builder.Services
+	.AddOptions<ConnectionStrings>()
+	.BindConfiguration("ConnectionStrings")
+	.ValidateDataAnnotations()
+	.ValidateOnStart();
+
+builder.Services.AddOptions<SeqStrings>()
+	.BindConfiguration("Seq")
+	.ValidateDataAnnotations()
+	.ValidateOnStart();
 
 builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 {
@@ -27,7 +52,10 @@ builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 	options.UseLazyLoadingProxies();
 });
 
-builder.Services.AddScoped<IPersonRepository<IReadOnlyCollection<Person>>, PersonRepository>();
+builder.Services.AddLogging(logging =>
+{
+	logging.AddSeq(builder.Configuration["Seq:Host"], apiKey: builder.Configuration["Seq:ApiKey"]);
+});
 
 var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
 
@@ -40,6 +68,7 @@ var shortCircuitPolicy = HttpPolicyExtensions
 	.HandleTransientHttpError()
 	.Or<TimeoutRejectedException>()
 	.AdvancedCircuitBreakerAsync(0.75, TimeSpan.FromSeconds(60), 4, TimeSpan.FromSeconds(120));
+
 
 var defaultPolicy = Policy.WrapAsync(timeoutPolicy, retryPolicy, shortCircuitPolicy);
 
@@ -54,6 +83,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
+app.UseCors("AllowDashboard");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
