@@ -1,117 +1,116 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Mtd.Kiosk.Infrastructure.EfCore;
+using Mtd.Kiosk.Api.Models;
+using Mtd.Kiosk.Core.Entities;
+using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers
 {
-	[Route("api/ticket")]
+	[Route("ticket")]
 	[ApiController]
-	public class TicketController : ControllerBase
+	public class TicketController(ITicketRepository ticketRepository, ILogger<TicketController> logger) : ControllerBase
 	{
-		private readonly KioskContext _context;
-		private readonly ILogger<TicketController> _logger;
+		private readonly ITicketRepository _ticketRepository = ticketRepository ?? throw new ArgumentNullException(nameof(ticketRepository));
+		private readonly ILogger<TicketController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-		public TicketController(KioskContext context, ILogger<TicketController> logger)
+		[HttpGet("{ticketId}")]
+		[ProducesResponseType(typeof(Ticket), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<Ticket>> GetTicket(string TicketId, CancellationToken cancellationToken)
 		{
-			_context = context ?? throw new ArgumentNullException(nameof(context));
-			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		}
-
-		[HttpGet("{TicketId}")]
-		public async Task<IActionResult> GetTicket(string TicketId)
-		{
-			var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == TicketId);
-			if (ticket == null)
+			Ticket ticket;
+			try
 			{
-				_logger.LogError("Ticket not found: {TicketId}", TicketId);
+				ticket = await _ticketRepository.GetByIdentityAsync(TicketId, cancellationToken);
+			}
+			catch (InvalidOperationException ex)
+			{
+				_logger.LogWarning(ex, "Ticket not found: {ticketId}", TicketId);
 				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error getting ticket: {ticketId}", TicketId);
+				return StatusCode(500);
 			}
 
 			return Ok(ticket);
 		}
 
 		[HttpGet("all")]
-		public async Task<IActionResult> GetAllTickets()
+		[ProducesResponseType(typeof(IEnumerable<Ticket>), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<IEnumerable<Ticket>>> GetAllTickets([FromQuery] bool includeClosed, CancellationToken cancellationToken)
 		{
-			var tickets = await _context.Tickets.ToListAsync();
-			return Ok(tickets);
-		}
 
-		[HttpPost]
-		public async Task<IActionResult> CreateTicket(Core.Entities.Ticket ticket)
-		{
+			IReadOnlyCollection<Ticket> tickets;
+
 			try
 			{
-				_context.Tickets.Add(ticket);
+				if (includeClosed)
+				{
+					tickets = await _ticketRepository.GetAllAsync(cancellationToken);
+				}
+				else
+				{
+					tickets = await _ticketRepository.GetAllOpenTicketsAsync(cancellationToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error getting tickets");
+				return StatusCode(500);
+			}
+
+			return Ok(tickets);
+
+		}
+		[HttpPost]
+		[ProducesResponseType(typeof(Ticket), StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<Ticket>> CreateTicket(NewTicketModel newTicketModel, CancellationToken cancellationToken)
+		{
+			var ticket = newTicketModel.ToTicket();
+			try
+			{
+				await _ticketRepository.AddAsync(ticket, cancellationToken);
+				await _ticketRepository.CommitChangesAsync(cancellationToken);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error creating ticket");
-				return BadRequest();
+				return StatusCode(500);
 			}
-			await _context.SaveChangesAsync();
+
 			return CreatedAtAction(nameof(GetTicket), new { TicketId = ticket.Id }, ticket);
 		}
 
-		[HttpPut("{TicketId}")]
-		public async Task<IActionResult> UpdateTicket(string TicketId, Core.Entities.Ticket ticket)
+		[HttpPatch("{ticketId}/status/{status}")]
+		[ProducesResponseType(typeof(Ticket), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<Ticket>> UpdateTicket(string ticketId, TicketStatusType status, CancellationToken cancellationToken)
 		{
-			if (TicketId != ticket.Id)
-			{
-				return BadRequest();
-			}
 
-			// update ticket with new values
-			var ticketToUpdate = await _context.Tickets.FindAsync(TicketId);
-			if (ticketToUpdate == null)
-			{
-				return NotFound();
-			}
-
-			ticketToUpdate.Status = ticket.Status;
-			ticketToUpdate.CloseDate = ticket.CloseDate;
-			ticketToUpdate.OpenDate = ticket.OpenDate;
-			ticketToUpdate.Description = ticket.Description;
-			await _context.SaveChangesAsync();
-
+			Ticket ticket;
 			try
 			{
-				await _context.SaveChangesAsync();
+				ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
+				ticket.Status = status;
+				await _ticketRepository.CommitChangesAsync(cancellationToken);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (InvalidOperationException ex)
 			{
-				if (!TicketExists(TicketId))
-				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
-			}
-
-			return NoContent();
-		}
-
-		[HttpDelete("{TicketId}")]
-		public async Task<IActionResult> DeleteTicket(string TicketId)
-		{
-			var ticket = await _context.Tickets.FindAsync(TicketId);
-			if (ticket == null)
-			{
+				_logger.LogWarning(ex, "Ticket not found: {ticketId}", ticketId);
 				return NotFound();
 			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error updating ticket: {ticketId}", ticketId);
+				return StatusCode(500);
+			}
 
-			_context.Tickets.Remove(ticket);
-			await _context.SaveChangesAsync();
-
-			return NoContent();
-		}
-
-		private bool TicketExists(string ticketId)
-		{
-			return _context.Tickets.Any(e => e.Id == ticketId);
-
+			return Ok(ticket);
 		}
 	}
 }

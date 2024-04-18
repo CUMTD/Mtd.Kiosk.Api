@@ -1,10 +1,13 @@
-﻿using Mtd.Core.Entities;
+﻿using Mtd.Core.Repositories;
+using Mtd.Core.Entities;
 
 namespace Mtd.Kiosk.Core.Repositories
 {
-	public interface IRepository<T_Entity> where T_Entity : IEntity
-	{
-		void Delete(T_Entity entity);
-
-	}
+	public interface IRepository<T> :
+    IAsyncIdentifiable<string, T>,
+    IAsyncReadable<T, IReadOnlyCollection<T>>,
+    IAsyncWriteable<T, IReadOnlyCollection<T>>
+    where T : class, IIdentity<string>
+    {
+    }
 }

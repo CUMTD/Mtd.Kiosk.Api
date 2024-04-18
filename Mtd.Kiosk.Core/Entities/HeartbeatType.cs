@@ -2,8 +2,8 @@
 {
 	public enum HeartbeatType
 	{
-		LED = 0,
-		LCD = 1,
-		Annunciator = 2,
+		Button = 0,
+		LED = 1,
+		LCD = 2,
 	}
 }

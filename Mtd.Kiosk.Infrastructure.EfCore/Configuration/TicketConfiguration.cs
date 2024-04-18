@@ -37,8 +37,10 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration
 				.Property(t => t.Description)
 				.IsRequired();
 
-
+			/*_ = builder
+				.HasOne(t => t.Kiosk)
+				.WithMany(k => k.Tickets)
+				.HasForeignKey(k => k.KioskId);*/
 		}
 	}
-
 }
