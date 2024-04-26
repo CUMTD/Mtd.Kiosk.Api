@@ -28,6 +28,11 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration
 			_ = builder
 				.Property(t => t.CreatedBy);
 
+			_ = builder
+				.Property(t => t.Deleted)
+				.HasDefaultValue(false)
+				.IsRequired();
+
 
 
 

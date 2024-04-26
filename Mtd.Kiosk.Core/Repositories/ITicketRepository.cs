@@ -8,5 +8,8 @@ namespace Mtd.Kiosk.Core.Repositories
 
 		Task<IReadOnlyCollection<Ticket>> GetAllOpenTicketsAsync(CancellationToken cancellationToken);
 
+		Task<int> GetOpenTicketCountAsync(string kioskId, CancellationToken cancellationToken);
+
+
 	}
 }

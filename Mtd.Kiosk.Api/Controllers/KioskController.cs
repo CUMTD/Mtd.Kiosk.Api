@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Mtd.Kiosk.Api.Config;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
@@ -12,13 +14,16 @@ namespace Mtd.Kiosk.Api.Controllers
 		private readonly IHeartbeatRepository _heartbeatRepository;
 		private readonly ITicketRepository _ticketRepository;
 		private readonly ILogger<KioskController> _logger;
+		private readonly ApiConfiguration _apiConfiguration;
 
-		public KioskController(IKioskRepository kioskRepository, IHeartbeatRepository heartbeatRepository, ITicketRepository ticketRepository, ILogger<KioskController> logger)
+		public KioskController(IKioskRepository kioskRepository, IHeartbeatRepository heartbeatRepository, ITicketRepository ticketRepository, ILogger<KioskController> logger, IOptions<ApiConfiguration> apiConfiguration)
 		{
+
 			_kioskRepository = kioskRepository ?? throw new ArgumentNullException(nameof(kioskRepository));
 			_heartbeatRepository = heartbeatRepository ?? throw new ArgumentNullException(nameof(heartbeatRepository));
 			_ticketRepository = ticketRepository ?? throw new ArgumentNullException(nameof(ticketRepository));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			_apiConfiguration = apiConfiguration.Value ?? throw new ArgumentNullException(nameof(apiConfiguration));
 		}
 
 		[HttpGet("{KioskId}")]
@@ -97,6 +102,8 @@ namespace Mtd.Kiosk.Api.Controllers
 			var ledHealth = await CalculateHealth(KioskId, HeartbeatType.LED, cancellationToken);
 			var lcdHealth = await CalculateHealth(KioskId, HeartbeatType.LCD, cancellationToken);
 
+			var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(KioskId, cancellationToken);
+
 			// return json object with health status of each component
 			return Ok(new
 			{
@@ -107,13 +114,14 @@ namespace Mtd.Kiosk.Api.Controllers
 					button = buttonHealth,
 					led = ledHealth,
 					lcd = lcdHealth
-				}
+				},
+				openTicketCount = openTicketCount
 			});
 		}
 
-		private async Task<ActionResult<HealthStatus>> CalculateHealth(string KioskId, HeartbeatType HeartbeatType, CancellationToken cancellationToken)
+		private async Task<HealthStatus> CalculateHealth(string KioskId, HeartbeatType HeartbeatType, CancellationToken cancellationToken)
 		{
-			IReadOnlyCollection<Heartbeat> heartbeats;
+			IEnumerable<Heartbeat> heartbeats;
 			Heartbeat lastHeartbeat;
 
 			try
@@ -140,10 +148,9 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 
 			var timeSinceLastHeartbeat = DateTime.UtcNow - lastHeartbeat.Timestamp;
-			// TODO : make magic nums configurable
-			if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(5))
+			if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(_apiConfiguration.WarningHeartbeatThresholdMinutes))
 			{
-				if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(10))
+				if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(_apiConfiguration.CriticalHeartbeatThresholdMinutes))
 				{
 					return HealthStatus.Critical;
 				}
@@ -163,6 +170,28 @@ namespace Mtd.Kiosk.Api.Controllers
 			try
 			{
 				tickets = await _ticketRepository.GetByKioskIdAsync(KioskId, cancellationToken);
+				// split into open and closed tickets
+				if (tickets != null)
+				{
+					var openTickets =
+						tickets.Where(t => t.Status == TicketStatusType.Open).ToList();
+					var closedTickets = tickets.Where(t => t.Status == TicketStatusType.Resolved).ToList();
+
+
+
+
+
+					openTickets.Sort((t1, t2) => t2.OpenDate.CompareTo(t1.OpenDate));
+					closedTickets.Sort((t1, t2) => t2.OpenDate.CompareTo(t1.OpenDate));
+
+					tickets = openTickets.Concat(closedTickets).ToList();
+
+
+
+
+
+				}
+
 			}
 			catch (Exception ex)
 			{
@@ -172,5 +201,7 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			return Ok(tickets);
 		}
+
+
 	}
 }

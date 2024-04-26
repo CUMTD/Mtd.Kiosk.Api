@@ -21,6 +21,8 @@ namespace Mtd.Kiosk.Api.Extensions
 			_ = builder.Services.AddScoped<IKioskRepository, KioskRepository>();
 			_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
 			_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+			_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
+
 
 			return builder;
 		}
@@ -34,9 +36,17 @@ namespace Mtd.Kiosk.Api.Extensions
 				_ = builder.Services.AddSingleton(config);
 			}
 
+
+
 			_ = builder.Services
 				.AddOptions<ConnectionStrings>()
 				.BindConfiguration("ConnectionStrings")
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+
+			_ = builder.Services
+				.AddOptions<ApiConfiguration>()
+				.BindConfiguration("ApiConfiguration")
 				.ValidateDataAnnotations()
 				.ValidateOnStart();
 

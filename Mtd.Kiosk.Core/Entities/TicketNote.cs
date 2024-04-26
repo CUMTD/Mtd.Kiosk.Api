@@ -11,10 +11,22 @@ namespace Mtd.Kiosk.Core.Entities
 		public required DateTime CreatedDate { get; set; }
 		public required string CreatedBy { get; set; }
 
+		public required bool Deleted { get; set; }
+
 		[SetsRequiredMembers]
-		protected TicketNote() : base()
+		public TicketNote() : base()
 		{
 			CreatedDate = DateTime.Now;
+			Deleted = false;
+		}
+
+		[SetsRequiredMembers]
+		public TicketNote(string ticketId, string markdownBody, string createdBy) : this()
+		{
+			TicketId = ticketId;
+			MarkdownBody = markdownBody;
+			CreatedBy = createdBy;
+
 		}
 	}
 }

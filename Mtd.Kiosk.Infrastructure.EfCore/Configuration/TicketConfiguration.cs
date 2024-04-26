@@ -34,8 +34,11 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration
 				.IsRequired();
 
 			_ = builder
-				.Property(t => t.Description)
+				.Property(t => t.Title)
 				.IsRequired();
+
+			_ = builder
+				.Property(t => t.Description);
 
 			/*_ = builder
 				.HasOne(t => t.Kiosk)

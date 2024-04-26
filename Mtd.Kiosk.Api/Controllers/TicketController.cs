@@ -112,5 +112,37 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			return Ok(ticket);
 		}
+
+		[HttpPost("{ticketId}/comment")]
+		[ProducesResponseType(typeof(Ticket), StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult<Ticket>> AddComment([FromRoute] string ticketId, [FromBody] NewTicketNoteModel newTicketNoteModel, CancellationToken cancellationToken)
+		{
+			_logger.LogInformation("Adding comment to ticket: {ticketId}", ticketId);
+			Ticket ticket;
+			TicketNote note = newTicketNoteModel.ToTicketNote(ticketId);
+			try
+			{
+				ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
+				ticket.TicketNotes.Add(note);
+				await _ticketRepository.CommitChangesAsync(cancellationToken);
+			}
+			catch (InvalidOperationException ex)
+			{
+				_logger.LogWarning(ex, "Ticket not found: {ticketId}", ticketId);
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error adding comment to ticket: {ticketId}", ticketId);
+				return StatusCode(500);
+			}
+
+			return Ok(ticket);
+		}
+
+
+
 	}
 }

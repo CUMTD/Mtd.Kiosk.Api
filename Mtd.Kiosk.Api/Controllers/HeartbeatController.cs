@@ -18,6 +18,7 @@ namespace Mtd.Kiosk.Api.Controllers
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public async Task<ActionResult<Ticket>> PostHeartbeat([FromBody] NewHeartbeatModel newHeartbeatModel, CancellationToken cancellationToken)
 		{
+			_logger.LogInformation("Recieved heartbeat for kiosk: {KioskId}", newHeartbeatModel.KioskId);
 			var heartbeat = newHeartbeatModel.ToHeartbeat();
 			try
 			{
@@ -36,6 +37,7 @@ namespace Mtd.Kiosk.Api.Controllers
 				return StatusCode(500);
 			}
 
+			_logger.LogInformation("Heartbeat added for kiosk: {KioskId}", newHeartbeatModel.KioskId);
 			return Ok();
 		}
 	}
