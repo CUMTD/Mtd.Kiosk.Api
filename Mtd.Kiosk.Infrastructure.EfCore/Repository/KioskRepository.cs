@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Mtd.Infrastructure.EFCore.Repositories;
 using Mtd.Kiosk.Core.Repositories;
+using System.Collections.Immutable;
+
 
 namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 {
@@ -12,9 +14,11 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 				.SingleAsync(k => k.Id == identity, cancellationToken);
 		}
 
-		Task<List<Core.Entities.Kiosk>> IKioskRepository.GetAllAsync(CancellationToken cancellationToken)
+		async Task<IReadOnlyCollection<Core.Entities.Kiosk>> IKioskRepository.GetAllAsync(CancellationToken cancellationToken)
 		{
-			return _dbSet.ToListAsync(cancellationToken);
+			var kiosks = await _dbSet.ToArrayAsync(cancellationToken);
+
+			return kiosks.ToImmutableArray();
 		}
 	}
 }

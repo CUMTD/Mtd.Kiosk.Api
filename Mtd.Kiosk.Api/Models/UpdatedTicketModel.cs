@@ -2,6 +2,6 @@
 {
 	public class UpdatedTicketModel
 	{
-		public required string markdownBody { get; set; }
+		public required string MarkdownBody { get; set; }
 	}
 }

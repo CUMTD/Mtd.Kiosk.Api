@@ -50,10 +50,6 @@ namespace Mtd.Kiosk.Api.Extensions
 				.ValidateDataAnnotations()
 				.ValidateOnStart();
 
-			_ = builder.Services.AddOptions<SeqStrings>()
-				.BindConfiguration("Seq")
-				.ValidateDataAnnotations()
-				.ValidateOnStart();
 
 			_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 			{

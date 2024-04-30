@@ -2,6 +2,7 @@
 using Mtd.Infrastructure.EFCore.Repositories;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
+using System.Collections.Immutable;
 
 namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 {
@@ -9,11 +10,14 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 	{
 
 
-		Task<List<Heartbeat>> IHeartbeatRepository.GetByIdentityAndHeartbeatTypeAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken)
+		public async Task<IReadOnlyCollection<Heartbeat>> GetByIdentityAndHeartbeatTypeAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken)
 		{
-			return _dbSet
+			var heartbeats = await _dbSet
 				.Where(h => h.KioskId == identity && h.Type == heartbeatType)
-				.ToListAsync(cancellationToken);
+				.ToArrayAsync(cancellationToken);
+
+			return heartbeats.ToImmutableArray();
+
 		}
 	}
 }

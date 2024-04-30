@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Mtd.Kiosk.Api.Models;
+using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers
 {
-	[Route("ticketnote")]
+	[Route("ticket-note")]
 	[ApiController]
 	public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, ILogger<TicketNoteController> logger) : ControllerBase
 	{
@@ -18,17 +19,19 @@ namespace Mtd.Kiosk.Api.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DeleteTicketNoteAsync(string noteId, CancellationToken cancellationToken)
 		{
-			var ticketNote = await _ticketNoteRepository.GetByIdentityAsync(noteId, cancellationToken);
+			TicketNote ticketNote;
 
-			if (ticketNote == null)
-			{
-				return NotFound();
-			}
 			try
 			{
-				ticketNote.Deleted = true;
 
+				ticketNote = await _ticketNoteRepository.GetByIdentityAsync(noteId, cancellationToken);
+				ticketNote.Deleted = true;
 				await _ticketNoteRepository.CommitChangesAsync(cancellationToken);
+			}
+			catch (InvalidOperationException ex)
+			{
+				_logger.LogWarning(ex, "Ticket note not found: {noteId}", noteId);
+				return NotFound();
 			}
 			catch (Exception ex)
 			{
@@ -55,7 +58,7 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			try
 			{
-				ticketNote.MarkdownBody = updatedTicketModel.markdownBody;
+				ticketNote.MarkdownBody = updatedTicketModel.MarkdownBody;
 
 				await _ticketNoteRepository.CommitChangesAsync(cancellationToken);
 			}
@@ -65,7 +68,7 @@ namespace Mtd.Kiosk.Api.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 

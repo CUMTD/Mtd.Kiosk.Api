@@ -4,7 +4,7 @@
 	{
 
 		Task<Entities.Kiosk> GetByIdentityWithTicketsAsync(string identity, CancellationToken cancellationToken);
-		Task<List<Entities.Kiosk>> GetAllAsync(CancellationToken cancellationToken);
+		Task<IReadOnlyCollection<Entities.Kiosk>> GetAllAsync(CancellationToken cancellationToken);
 
 	}
 }

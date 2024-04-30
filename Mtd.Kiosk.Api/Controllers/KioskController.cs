@@ -26,26 +26,26 @@ namespace Mtd.Kiosk.Api.Controllers
 			_apiConfiguration = apiConfiguration.Value ?? throw new ArgumentNullException(nameof(apiConfiguration));
 		}
 
-		[HttpGet("{KioskId}")]
+		[HttpGet("{kioskId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<Core.Entities.Kiosk>> GetKiosk(string KioskId, CancellationToken cancellationToken)
+		public async Task<ActionResult<Core.Entities.Kiosk>> GetKiosk(string kioskId, CancellationToken cancellationToken)
 		{
-			_logger.LogInformation("Getting kiosk: {KioskId}", KioskId);
+			_logger.LogInformation("Getting kiosk: {kioskId}", kioskId);
 			Core.Entities.Kiosk kiosk;
 			try
 			{
-				kiosk = await _kioskRepository.GetByIdentityWithTicketsAsync(KioskId, cancellationToken);
+				kiosk = await _kioskRepository.GetByIdentityWithTicketsAsync(kioskId, cancellationToken);
 			}
 			catch (InvalidOperationException ex)
 			{
-				_logger.LogWarning(ex, "Kiosk not found: {KioskId}", KioskId);
+				_logger.LogWarning(ex, "Kiosk not found: {kioskId}", kioskId);
 				return NotFound();
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error getting kiosk: {KioskId}", KioskId);
+				_logger.LogError(ex, "Error getting kiosk: {kioskId}", kioskId);
 				return StatusCode(500);
 			}
 
@@ -91,18 +91,18 @@ namespace Mtd.Kiosk.Api.Controllers
 			return CreatedAtAction(nameof(GetKiosk), new { KioskId = kiosk.Id }, kiosk);
 		}
 
-		[HttpGet("{KioskId}/health")]
+		[HttpGet("{kioskId}/health")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult> GetKioskHealth(string KioskId, CancellationToken cancellationToken)
+		public async Task<ActionResult> GetKioskHealth(string kioskId, CancellationToken cancellationToken)
 		{
-			_logger.LogInformation("Getting health for kiosk: {KioskId}", KioskId);
+			_logger.LogInformation("Getting health for kiosk: {kioskId}", kioskId);
 
-			var buttonHealth = await CalculateHealth(KioskId, HeartbeatType.Button, cancellationToken);
-			var ledHealth = await CalculateHealth(KioskId, HeartbeatType.LED, cancellationToken);
-			var lcdHealth = await CalculateHealth(KioskId, HeartbeatType.LCD, cancellationToken);
+			var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
+			var ledHealth = await CalculateHealth(kioskId, HeartbeatType.LED, cancellationToken);
+			var lcdHealth = await CalculateHealth(kioskId, HeartbeatType.LCD, cancellationToken);
 
-			var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(KioskId, cancellationToken);
+			var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(kioskId, cancellationToken);
 
 			// return json object with health status of each component
 			return Ok(new
@@ -119,14 +119,14 @@ namespace Mtd.Kiosk.Api.Controllers
 			});
 		}
 
-		private async Task<HealthStatus> CalculateHealth(string KioskId, HeartbeatType HeartbeatType, CancellationToken cancellationToken)
+		private async Task<HealthStatus> CalculateHealth(string kioskId, HeartbeatType heartbeatType, CancellationToken cancellationToken)
 		{
 			IEnumerable<Heartbeat> heartbeats;
 			Heartbeat lastHeartbeat;
 
 			try
 			{
-				heartbeats = await _heartbeatRepository.GetByIdentityAndHeartbeatTypeAsync(KioskId, HeartbeatType, cancellationToken);
+				heartbeats = await _heartbeatRepository.GetByIdentityAndHeartbeatTypeAsync(kioskId, heartbeatType, cancellationToken);
 				if (heartbeats != null)
 				{
 					lastHeartbeat = heartbeats.OrderByDescending(h => h.Timestamp).FirstOrDefault();
@@ -138,7 +138,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error getting heartbeats for kiosk: {KioskId}", KioskId);
+				_logger.LogError(ex, "Error getting heartbeats for kiosk: {kioskId}", kioskId);
 				return HealthStatus.Unknown;
 			}
 
@@ -148,7 +148,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 
 			var timeSinceLastHeartbeat = DateTime.UtcNow - lastHeartbeat.Timestamp;
-			if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(_apiConfiguration.WarningHeartbeatThresholdMinutes))
+			if (timeSinceLastHeartbeat.TotalMinutes > _apiConfiguration.WarningHeartbeatThresholdMinutes)
 			{
 				if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(_apiConfiguration.CriticalHeartbeatThresholdMinutes))
 				{
@@ -161,7 +161,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			return HealthStatus.Healthy;
 		}
 
-		[HttpGet("{KioskId}/tickets")]
+		[HttpGet("{kioskId}/tickets")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public async Task<ActionResult<IEnumerable<Ticket>>> GetTicketsByKiosk(string KioskId, CancellationToken cancellationToken)
@@ -173,35 +173,19 @@ namespace Mtd.Kiosk.Api.Controllers
 				// split into open and closed tickets
 				if (tickets != null)
 				{
-					var openTickets =
-						tickets.Where(t => t.Status == TicketStatusType.Open).ToList();
-					var closedTickets = tickets.Where(t => t.Status == TicketStatusType.Resolved).ToList();
-
-
-
-
-
-					openTickets.Sort((t1, t2) => t2.OpenDate.CompareTo(t1.OpenDate));
-					closedTickets.Sort((t1, t2) => t2.OpenDate.CompareTo(t1.OpenDate));
-
-					tickets = openTickets.Concat(closedTickets).ToList();
-
-
-
-
+					tickets = tickets.OrderByDescending(t => t.Status == TicketStatusType.Open).ThenByDescending(t => t.OpenDate).ToArray();
 
 				}
 
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error getting tickets for kiosk: {KioskId}", KioskId);
+				_logger.LogError(ex, "Error getting tickets for kiosk: {kioskId}", KioskId);
 				return StatusCode(500);
 			}
 
 			return Ok(tickets);
 		}
-
 
 	}
 }

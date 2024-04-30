@@ -16,21 +16,21 @@ namespace Mtd.Kiosk.Api.Controllers
 		[ProducesResponseType(typeof(Ticket), StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-		public async Task<ActionResult<Ticket>> GetTicket(string TicketId, CancellationToken cancellationToken)
+		public async Task<ActionResult<Ticket>> GetTicket(string ticketId, CancellationToken cancellationToken)
 		{
 			Ticket ticket;
 			try
 			{
-				ticket = await _ticketRepository.GetByIdentityAsync(TicketId, cancellationToken);
+				ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
 			}
 			catch (InvalidOperationException ex)
 			{
-				_logger.LogWarning(ex, "Ticket not found: {ticketId}", TicketId);
+				_logger.LogWarning(ex, "Ticket not found: {ticketId}", ticketId);
 				return NotFound();
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error getting ticket: {ticketId}", TicketId);
+				_logger.LogError(ex, "Error getting ticket: {ticketId}", ticketId);
 				return StatusCode(500);
 			}
 

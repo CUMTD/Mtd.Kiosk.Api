@@ -19,13 +19,14 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 			return _dbSet.CountAsync(t => t.KioskId == kioskId && t.Status == TicketStatusType.Open, cancellationToken);
 		}
 
-		Task<List<Ticket>> ITicketRepository.GetByKioskIdAsync(string kioskId, CancellationToken cancellationToken)
+		public async Task<IReadOnlyCollection<Ticket>> GetByKioskIdAsync(string kioskId, CancellationToken cancellationToken)
 		{
-			return _dbSet
+			var kiosk = await _dbSet
 				.Where(t => t.KioskId == kioskId)
+				.Include(t => t.TicketNotes.Where(tn => !tn.Deleted).OrderByDescending(tn => tn.CreatedDate))
+				.ToArrayAsync(cancellationToken);
 
-				.Include(t => t.TicketNotes.Where(tn => tn.Deleted == false).OrderByDescending(tn => tn.CreatedDate))
-				.ToListAsync(cancellationToken);
+			return kiosk.ToImmutableArray();
 
 		}
 	}
