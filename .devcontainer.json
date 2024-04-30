@@ -1,0 +1,33 @@
+{
+    "name": "C# (.NET)",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:8.0",
+    "features": {
+        "ghcr.io/devcontainers/features/dotnet:2": {},
+        "ghcr.io/devcontainers/features/powershell:1": {}
+    },
+    "forwardPorts": [
+        5000,
+        5001
+    ],
+    "portsAttributes": {
+        "5001": {
+            "protocol": "https"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "editor.formatOnSave": true,
+                "files.insertFinalNewline": true
+            },
+            "extensions": [
+                "ms-dotnettools.csdevkit",
+                "github.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-pack",
+                "ms-dotnettools.vscode-dotnet-runtime"
+            ]
+        }
+    },
+    "postCreateCommand": "dotnet restore"
+    // "customizations": {},
+}
