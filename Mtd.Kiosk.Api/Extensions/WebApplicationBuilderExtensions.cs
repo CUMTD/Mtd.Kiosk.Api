@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Mtd.Kiosk.Api.Config;
+using Mtd.Kiosk.Api.Filters;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
@@ -23,6 +24,7 @@ namespace Mtd.Kiosk.Api.Extensions
 			_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 			_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
 
+			_ = builder.Services.AddScoped<ApiKeyFilter>();
 
 			return builder;
 		}
@@ -85,6 +87,7 @@ namespace Mtd.Kiosk.Api.Extensions
 
 			_ = builder.Services.AddEndpointsApiExplorer();
 			_ = builder.Services.AddSwaggerGen();
+			_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
 
 			return builder;
 		}
