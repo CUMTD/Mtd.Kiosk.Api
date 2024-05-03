@@ -6,12 +6,25 @@ builder.Configure();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseStaticFiles();
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+	options.RoutePrefix = string.Empty;
+	options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+	options.DocumentTitle = "Kiosk API";
+
+	options.DisplayRequestDuration();
+
+	options.InjectStylesheet("/css/swagger-ui.css");
+
+	options
+		.SwaggerEndpoint(
+			$"/swagger/v1.0/swagger.json",
+			$"Kiosk API - v1.0".Trim()
+		);
+});
 
 app.UseCors("AllowDashboard");
 app.UseHttpsRedirection();
