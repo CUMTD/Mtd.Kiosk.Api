@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Mtd.Kiosk.Api.Config;
+using Mtd.Kiosk.Api.Filters;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
@@ -34,6 +35,12 @@ namespace Mtd.Kiosk.Api.Extensions
 			}
 
 			builder.Configuration.AddEnvironmentVariables("Kiosk_");
+
+
+			_ = builder.Services.AddOptions<ApiAuthentication>()
+			.Bind(builder.Configuration.GetSection(nameof(ApiAuthentication)))
+			.ValidateDataAnnotations();
+
 
 			var config = builder.Configuration.Get<ConnectionStrings>();
 			if (config != default)
@@ -86,6 +93,7 @@ namespace Mtd.Kiosk.Api.Extensions
 				.AllowAnyMethod()));
 
 			_ = builder.Services.AddEndpointsApiExplorer();
+
 			_ = builder.Services.AddSwaggerGen(options =>
 			{
 				options.SwaggerDoc($"v1.0", new OpenApiInfo
@@ -120,6 +128,8 @@ namespace Mtd.Kiosk.Api.Extensions
 				  });
 
 			});
+      _ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
+
 
 			return builder;
 		}
