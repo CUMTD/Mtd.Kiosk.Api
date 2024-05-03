@@ -28,7 +28,12 @@ namespace Mtd.Kiosk.Api.Extensions
 		}
 		private static WebApplicationBuilder AddConfiguration(this WebApplicationBuilder builder)
 		{
-			_ = builder.Configuration.AddUserSecrets<Program>();
+			if (builder.Environment.IsDevelopment())
+			{
+				_ = builder.Configuration.AddUserSecrets<Program>();
+			}
+
+			builder.Configuration.AddEnvironmentVariables("Kiosk_");
 
 			var config = builder.Configuration.Get<ConnectionStrings>();
 			if (config != default)

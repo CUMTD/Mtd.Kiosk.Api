@@ -6,6 +6,12 @@ builder.Configure();
 
 var app = builder.Build();
 
+if (app.Environment.IsProduction())
+{
+	_ = app.UseHsts();
+}
+
+_ = app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSwagger();
@@ -26,6 +32,8 @@ app.UseSwaggerUI(options =>
 		);
 });
 
+app.UseRouting();
+
 app.UseCors("AllowDashboard");
 app.UseHttpsRedirection();
 
@@ -33,4 +41,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
