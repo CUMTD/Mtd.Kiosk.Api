@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Mtd.Kiosk.Api.Config;
 using Mtd.Kiosk.Api.Filters;
 using Mtd.Kiosk.Core.Repositories;
@@ -28,7 +29,12 @@ namespace Mtd.Kiosk.Api.Extensions
 		}
 		private static WebApplicationBuilder AddConfiguration(this WebApplicationBuilder builder)
 		{
-			_ = builder.Configuration.AddUserSecrets<Program>();
+			if (builder.Environment.IsDevelopment())
+			{
+				_ = builder.Configuration.AddUserSecrets<Program>();
+			}
+
+			builder.Configuration.AddEnvironmentVariables("Kiosk_");
 
 
 			_ = builder.Services.AddOptions<ApiAuthentication>()
@@ -42,8 +48,6 @@ namespace Mtd.Kiosk.Api.Extensions
 				_ = builder.Services.AddSingleton(config);
 			}
 
-
-
 			_ = builder.Services
 				.AddOptions<ConnectionStrings>()
 				.BindConfiguration("ConnectionStrings")
@@ -55,9 +59,6 @@ namespace Mtd.Kiosk.Api.Extensions
 				.BindConfiguration("ApiConfiguration")
 				.ValidateDataAnnotations()
 				.ValidateOnStart();
-
-
-
 
 			_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 			{
@@ -92,8 +93,43 @@ namespace Mtd.Kiosk.Api.Extensions
 				.AllowAnyMethod()));
 
 			_ = builder.Services.AddEndpointsApiExplorer();
-			_ = builder.Services.AddSwaggerGen();
-			_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
+
+			_ = builder.Services.AddSwaggerGen(options =>
+			{
+				options.SwaggerDoc($"v1.0", new OpenApiInfo
+				{
+					Version = "1.0",
+					Title = $"Kiosk",
+					Description = "MTD Kiosk API.",
+					Contact = new OpenApiContact
+					{
+						Name = "MTD",
+						Email = "developer@mtd.org"
+					}
+				});
+
+				var authMethodName = "API Key - Header";
+				var securityScheme = new OpenApiSecurityScheme
+				{
+					Reference = new OpenApiReference
+					{
+						Type = ReferenceType.SecurityScheme,
+						Id = authMethodName
+					},
+					Description = "Provide your API key in the header using X-ApiKey.",
+					In = ParameterLocation.Header,
+					Name = "X-ApiKey",
+					Type = SecuritySchemeType.ApiKey,
+					Scheme = "Bearer"
+				};
+				options.AddSecurityDefinition(authMethodName, securityScheme);
+				options.AddSecurityRequirement(new OpenApiSecurityRequirement() {
+					{ securityScheme, Array.Empty <string>() }
+				  });
+
+			});
+      _ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
+
 
 			return builder;
 		}
