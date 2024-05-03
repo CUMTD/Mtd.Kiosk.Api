@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Options;
+using Mtd.Kiosk.Api.Config;
 
 namespace Mtd.Kiosk.Api.Filters
 {
 	internal class ApiKeyFilter : IAuthorizationFilter
 	{
-		// todo replace
-		private readonly string[] _keys = ["mtddev"];
 		private readonly ILogger<ApiKeyFilter> _logger;
+		private readonly IOptions<ApiAuthentication> _keys;
 
-		public ApiKeyFilter(ILogger<ApiKeyFilter> logger)
+		public ApiKeyFilter(ILogger<ApiKeyFilter> logger, IOptions<ApiAuthentication> keys)
 		{
-
 			_logger = logger;
+			_keys = keys;
 		}
 
 		public void OnAuthorization(AuthorizationFilterContext context)
@@ -35,7 +36,7 @@ namespace Mtd.Kiosk.Api.Filters
 				_logger.LogInformation("No API key provided.");
 			}
 
-			if (_keys.Any(k => string.Equals(k, keyFromRequest, StringComparison.OrdinalIgnoreCase)))
+			if (_keys.Value.ApiKeys.Any(k => string.Equals(k, keyFromRequest, StringComparison.OrdinalIgnoreCase)))
 			{
 				_logger.LogTrace("Good API key.");
 				return;

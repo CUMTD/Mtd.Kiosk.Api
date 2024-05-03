@@ -24,13 +24,17 @@ namespace Mtd.Kiosk.Api.Extensions
 			_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 			_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
 
-			_ = builder.Services.AddScoped<ApiKeyFilter>();
-
 			return builder;
 		}
 		private static WebApplicationBuilder AddConfiguration(this WebApplicationBuilder builder)
 		{
 			_ = builder.Configuration.AddUserSecrets<Program>();
+
+
+			_ = builder.Services.AddOptions<ApiAuthentication>()
+			.Bind(builder.Configuration.GetSection(nameof(ApiAuthentication)))
+			.ValidateDataAnnotations();
+
 
 			var config = builder.Configuration.Get<ConnectionStrings>();
 			if (config != default)
@@ -51,6 +55,8 @@ namespace Mtd.Kiosk.Api.Extensions
 				.BindConfiguration("ApiConfiguration")
 				.ValidateDataAnnotations()
 				.ValidateOnStart();
+
+
 
 
 			_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
