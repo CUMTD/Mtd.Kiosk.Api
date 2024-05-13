@@ -6,6 +6,7 @@ namespace Mtd.Kiosk.Core.Entities
 	public class Kiosk : GuidEntity, IEntity
 	{
 		public required bool Deleted { get; set; }
+		// dont want to auto include tickets
 		public virtual ICollection<Ticket> Tickets { get; set; }
 
 		[SetsRequiredMembers]

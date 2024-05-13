@@ -91,12 +91,48 @@ namespace Mtd.Kiosk.Api.Controllers
 			return CreatedAtAction(nameof(GetKiosk), new { KioskId = kiosk.Id }, kiosk);
 		}
 
+		[HttpGet("all/health")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+		public async Task<ActionResult> GetAllKioskHealth(CancellationToken cancellationToken)
+		{
+			_logger.LogInformation("Getting all kiosk health");
+			// get all kiosks, then get health for each kiosk, then return json object with health status of each kiosk
+			var kiosks = await _kioskRepository.GetAllAsync(true, cancellationToken);
+
+			// for each kiosk, get health status with KioskHealth (avoid DbContext threading issues)
+
+			var kioskHealthTasks = kiosks.Select(k => KioskHealth(k.Id, cancellationToken).Result).ToArray();
+			return Ok(kioskHealthTasks);
+
+		}
+
+
+
+
 		[HttpGet("{kioskId}/health")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public async Task<ActionResult> GetKioskHealth(string kioskId, CancellationToken cancellationToken)
 		{
+			try
+			{
+
+				return Ok(await KioskHealth(kioskId, cancellationToken));
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error getting health for kiosk: {kioskId}", kioskId);
+				return StatusCode(500);
+			}
+		}
+
+
+		[NonAction]
+		public async Task<object> KioskHealth(string kioskId, CancellationToken cancellationToken)
+		{
 			_logger.LogInformation("Getting health for kiosk: {kioskId}", kioskId);
+
 
 			var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
 			var ledHealth = await CalculateHealth(kioskId, HeartbeatType.LED, cancellationToken);
@@ -105,9 +141,10 @@ namespace Mtd.Kiosk.Api.Controllers
 			var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(kioskId, cancellationToken);
 
 			// return json object with health status of each component
-			return Ok(new
+			return new
 			{
 				// return max health status of all components
+				kioskId = kioskId,
 				overallHealth = new[] { buttonHealth, ledHealth, lcdHealth }.Max(),
 				healthStatuses = new
 				{
@@ -116,9 +153,10 @@ namespace Mtd.Kiosk.Api.Controllers
 					lcd = lcdHealth
 				},
 				openTicketCount = openTicketCount
-			});
+			};
 		}
 
+		// calculate health for each possible HeartbeatType
 		private async Task<HealthStatus> CalculateHealth(string kioskId, HeartbeatType heartbeatType, CancellationToken cancellationToken)
 		{
 			IEnumerable<Heartbeat> heartbeats;

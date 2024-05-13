@@ -14,11 +14,22 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 				.SingleAsync(k => k.Id == identity, cancellationToken);
 		}
 
-		async Task<IReadOnlyCollection<Core.Entities.Kiosk>> IKioskRepository.GetAllAsync(CancellationToken cancellationToken)
+		async Task<IReadOnlyCollection<Core.Entities.Kiosk>> IKioskRepository.GetAllAsync(bool includeTickets, CancellationToken cancellationToken)
 		{
-			var kiosks = await _dbSet.ToArrayAsync(cancellationToken);
+			if (includeTickets)
+			{
+				var kiosks = await _dbSet.Include(k => k.Tickets).ThenInclude(t => t.TicketNotes).ToArrayAsync(cancellationToken);
 
-			return kiosks.ToImmutableArray();
+				return kiosks.ToImmutableArray();
+			}
+			else
+			{
+				var kiosks = await _dbSet.ToArrayAsync(cancellationToken);
+				return kiosks.ToImmutableArray();
+
+			}
+
+
 		}
 	}
 }
