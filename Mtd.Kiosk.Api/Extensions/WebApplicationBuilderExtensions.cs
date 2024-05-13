@@ -64,7 +64,7 @@ namespace Mtd.Kiosk.Api.Extensions
 			{
 				var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.KioskConnection;
 				options.UseSqlServer(connectionString);
-				options.UseLazyLoadingProxies();
+				// options.UseLazyLoadingProxies();
 			});
 
 			return builder;
@@ -128,7 +128,7 @@ namespace Mtd.Kiosk.Api.Extensions
 				  });
 
 			});
-      _ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
+			_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
 
 
 			return builder;
