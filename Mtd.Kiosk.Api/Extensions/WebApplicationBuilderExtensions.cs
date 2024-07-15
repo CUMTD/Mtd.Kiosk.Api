@@ -7,6 +7,7 @@ using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
 using Mtd.Kiosk.RealTime;
+using Mtd.Kiosk.RealTime.Config;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -57,6 +58,12 @@ namespace Mtd.Kiosk.Api.Extensions
 			_ = builder.Services
 				.AddOptions<ApiConfiguration>()
 				.BindConfiguration("ApiConfiguration")
+				.ValidateDataAnnotations()
+				.ValidateOnStart();
+
+			_ = builder.Services
+				.AddOptions<RealTimeClientConfig>()
+				.BindConfiguration("RealTimeClientConfig")
 				.ValidateDataAnnotations()
 				.ValidateOnStart();
 

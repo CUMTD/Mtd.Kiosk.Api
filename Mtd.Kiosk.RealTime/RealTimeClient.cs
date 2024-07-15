@@ -23,7 +23,7 @@ namespace Mtd.Kiosk.RealTime
 			_logger = logger;
 		}
 
-		public async Task<StopMonitoringResult?> GetRealTimeForStop(string stopId, CancellationToken cancellationToken)
+		public async Task<Departure[]?> GetRealTimeForStop(string stopId, CancellationToken cancellationToken)
 		{
 			HttpResponseMessage? httpResponseMessage;
 			try
@@ -50,7 +50,7 @@ namespace Mtd.Kiosk.RealTime
 			try
 			{
 				using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
-				var smResult = await JsonSerializer.DeserializeAsync<StopMonitoringResult>(contentStream, cancellationToken: cancellationToken);
+				var smResult = await JsonSerializer.DeserializeAsync<Departure[]>(contentStream, cancellationToken: cancellationToken);
 				return smResult;
 			}
 			catch (Exception ex)
