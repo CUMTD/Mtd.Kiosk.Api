@@ -10,6 +10,5 @@ namespace Mtd.Kiosk.Api.Config
 		[Required]
 		[Range(1, int.MaxValue)]
 		public required int CriticalHeartbeatThresholdMinutes { get; set; }
-
 	}
 }

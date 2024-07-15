@@ -101,14 +101,10 @@ namespace Mtd.Kiosk.Api.Controllers
 			var kiosks = await _kioskRepository.GetAllAsync(true, cancellationToken);
 
 			// for each kiosk, get health status with KioskHealth (avoid DbContext threading issues)
-
 			var kioskHealthTasks = kiosks.Select(k => KioskHealth(k.Id, cancellationToken).Result).ToArray();
 			return Ok(kioskHealthTasks);
 
 		}
-
-
-
 
 		[HttpGet("{kioskId}/health")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
@@ -117,7 +113,6 @@ namespace Mtd.Kiosk.Api.Controllers
 		{
 			try
 			{
-
 				return Ok(await KioskHealth(kioskId, cancellationToken));
 			}
 			catch (Exception ex)
@@ -127,12 +122,10 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 		}
 
-
 		[NonAction]
 		public async Task<object> KioskHealth(string kioskId, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation("Getting health for kiosk: {kioskId}", kioskId);
-
 
 			var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
 			var ledHealth = await CalculateHealth(kioskId, HeartbeatType.LED, cancellationToken);
@@ -167,7 +160,7 @@ namespace Mtd.Kiosk.Api.Controllers
 				heartbeats = await _heartbeatRepository.GetByIdentityAndHeartbeatTypeAsync(kioskId, heartbeatType, cancellationToken);
 				if (heartbeats != null)
 				{
-					lastHeartbeat = heartbeats.OrderByDescending(h => h.Timestamp).FirstOrDefault();
+					lastHeartbeat = heartbeats.OrderByDescending(h => h.Timestamp).First();
 				}
 				else
 				{
@@ -214,7 +207,6 @@ namespace Mtd.Kiosk.Api.Controllers
 					tickets = tickets.OrderByDescending(t => t.Status == TicketStatusType.Open).ThenByDescending(t => t.OpenDate).ToArray();
 
 				}
-
 			}
 			catch (Exception ex)
 			{
@@ -224,6 +216,5 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			return Ok(tickets);
 		}
-
 	}
 }
