@@ -37,11 +37,9 @@ namespace Mtd.Kiosk.Api.Extensions
 
 			builder.Configuration.AddEnvironmentVariables("Kiosk_");
 
-
 			_ = builder.Services.AddOptions<ApiAuthentication>()
 			.Bind(builder.Configuration.GetSection(nameof(ApiAuthentication)))
 			.ValidateDataAnnotations();
-
 
 			var config = builder.Configuration.Get<ConnectionStrings>();
 			if (config != default)
@@ -136,7 +134,6 @@ namespace Mtd.Kiosk.Api.Extensions
 
 			});
 			_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
-
 
 			return builder;
 		}

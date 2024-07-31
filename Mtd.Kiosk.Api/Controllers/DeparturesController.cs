@@ -26,6 +26,11 @@ namespace Mtd.Kiosk.Api.Controllers
 		{
 
 			var result = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
+			// sort result
+			if (result != null)
+			{
+				result = result.OrderBy(x => x.MinutesTillDeparture).ToArray();
+			}
 
 			if (result == null)
 			{

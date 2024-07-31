@@ -10,7 +10,6 @@ namespace Mtd.Kiosk.Api.Models
 		{
 			Departures = departures;
 		}
-
 	}
 
 	public class SimpleDeparture
@@ -26,10 +25,10 @@ namespace Mtd.Kiosk.Api.Models
 
 		public SimpleDeparture(Departure departure)
 		{
-			Route = departure.FriendlyRouteName;
+
+			Route = departure.FriendlyRouteName.ToUpper();
 			Time = departure.DepartsIn;
 		}
-
 	}
 }
 
