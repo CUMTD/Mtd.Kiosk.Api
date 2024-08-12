@@ -35,6 +35,11 @@ namespace Mtd.Kiosk.Api.Controllers
 				var soapClient = config.GetSoapClient();
 				response = await soapClient.GetScreenSnapshotAsync(new GetScreenSnapshotRequest());
 			}
+			catch (TimeoutException)
+			{
+				_logger.LogWarning("Timeout getting led preview image");
+				return StatusCode(404);
+			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error getting led preview image");
