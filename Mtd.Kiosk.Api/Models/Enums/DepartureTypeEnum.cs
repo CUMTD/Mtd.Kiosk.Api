@@ -1,4 +1,4 @@
-﻿namespace Mtd.Kiosk.Api.Enums;
+﻿namespace Mtd.Kiosk.Api.Models.Enums;
 
 public enum DepartureTypeEnum
 {

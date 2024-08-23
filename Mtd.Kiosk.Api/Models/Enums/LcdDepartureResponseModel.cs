@@ -3,7 +3,7 @@ using Mtd.Stopwatch.Core.Entities.Schedule;
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
-namespace Mtd.Kiosk.Api.Enums;
+namespace Mtd.Kiosk.Api.Models.Enums;
 
 public class LcdDepartureResponseModel
 {

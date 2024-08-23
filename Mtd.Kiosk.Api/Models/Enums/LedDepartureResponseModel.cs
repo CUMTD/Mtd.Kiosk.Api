@@ -1,6 +1,6 @@
 ﻿using Mtd.Kiosk.RealTime.Entities;
 
-namespace Mtd.Kiosk.Api.Enums;
+namespace Mtd.Kiosk.Api.Models.Enums;
 
 public class LedDepartureResponseModel
 {

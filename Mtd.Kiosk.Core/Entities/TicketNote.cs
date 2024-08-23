@@ -23,10 +23,10 @@ public class TicketNote : GuidEntity, IEntity
 	}
 
 	[SetsRequiredMembers]
-	public TicketNote(string ticketId, string markdownBody, string createdBy) : this()
+	public TicketNote(string ticketId, string createdBy, string? markdownBody) : this()
 	{
 		TicketId = ticketId;
-		MarkdownBody = markdownBody;
 		CreatedBy = createdBy;
+		MarkdownBody = markdownBody;
 	}
 }

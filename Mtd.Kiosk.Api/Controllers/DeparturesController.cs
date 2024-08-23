@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Mtd.Kiosk.Api.Models.Enums;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
@@ -119,7 +120,7 @@ public class DeparturesController : ControllerBase
 				.ThenBy(departure => departure.RouteNumber)
 				.ToLookup(departure => routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID")
 				.Take(7)
-			.OrderBy(d => d.FirstOrDefault().RouteNumber);
+				.OrderBy(d => d.First().RouteNumber);
 
 			var lcdDepartures = new List<LcdDeparture>();
 
@@ -132,9 +133,10 @@ public class DeparturesController : ControllerBase
 					lcdDepartureTimes.Add(new LcdDepartureTime(group.ElementAt(i)));
 				}
 
-				var publicRoute = routes.First(route => route.PublicRouteId == group.Key).PublicRoute;
+				var publicRoute = routes.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key).PublicRoute;
 
-				var lcdDeparture = new LcdDeparture(publicRoute, lcdDepartureTimes, group.First().Direction);
+				// public route should never be null here since we check for it in our first statement above.
+				var lcdDeparture = new LcdDeparture(publicRoute!, lcdDepartureTimes, group.First().Direction);
 
 				lcdDepartures.Add(lcdDeparture);
 			}

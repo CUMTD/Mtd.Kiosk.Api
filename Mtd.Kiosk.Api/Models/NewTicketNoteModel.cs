@@ -6,6 +6,5 @@ public class NewTicketNoteModel
 {
 	public string? MarkdownBody { get; set; }
 	public required string CreatedBy { get; set; }
-
-	public TicketNote ToTicketNote(string ticketId) => new(ticketId, MarkdownBody, CreatedBy);
+	public TicketNote ToTicketNote(string ticketId) => new(ticketId, CreatedBy, MarkdownBody);
 }
