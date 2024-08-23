@@ -1,7 +1,6 @@
-﻿namespace Mtd.Kiosk.Api.Models
+﻿namespace Mtd.Kiosk.Api.Models;
+
+public class UpdatedTicketModel
 {
-	public class UpdatedTicketModel
-	{
-		public required string MarkdownBody { get; set; }
-	}
+	public required string MarkdownBody { get; set; }
 }

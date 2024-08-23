@@ -1,10 +1,9 @@
-﻿namespace Mtd.Kiosk.Core.Entities
+﻿namespace Mtd.Kiosk.Core.Entities;
+
+public enum HealthStatus
 {
-	public enum HealthStatus
-	{
-		Unknown = -1,
-		Healthy = 0,
-		Warning = 1,
-		Critical = 2,
-	}
+	Unknown = -1,
+	Healthy = 0,
+	Warning = 1,
+	Critical = 2,
 }

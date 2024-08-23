@@ -1,9 +1,8 @@
-﻿namespace Mtd.Kiosk.Api.Enums
+﻿namespace Mtd.Kiosk.Api.Enums;
+
+public enum DepartureTypeEnum
 {
-	public enum DepartureTypeEnum
-	{
-		Led,
-		Button,
-		Lcd
-	}
+	Led,
+	Button,
+	Lcd
 }

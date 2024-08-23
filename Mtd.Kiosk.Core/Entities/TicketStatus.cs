@@ -1,9 +1,8 @@
-﻿namespace Mtd.Kiosk.Core.Entities
+﻿namespace Mtd.Kiosk.Core.Entities;
+
+public enum TicketStatusType : byte
 {
-	public enum TicketStatusType : byte
-	{
-		Open = 0,
-		OnHold = 1,
-		Resolved = 2,
-	}
+	Open = 0,
+	OnHold = 1,
+	Resolved = 2,
 }

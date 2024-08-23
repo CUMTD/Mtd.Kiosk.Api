@@ -1,9 +1,8 @@
-﻿namespace Mtd.Kiosk.Core.Entities
+﻿namespace Mtd.Kiosk.Core.Entities;
+
+public enum HeartbeatType
 {
-	public enum HeartbeatType
-	{
-		Button = 0,
-		LED = 1,
-		LCD = 2,
-	}
+	Button = 0,
+	LED = 1,
+	LCD = 2,
 }
