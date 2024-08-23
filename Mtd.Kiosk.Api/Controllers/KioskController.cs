@@ -125,7 +125,7 @@ namespace Mtd.Kiosk.Api.Controllers
 		[NonAction]
 		public async Task<object> KioskHealth(string kioskId, CancellationToken cancellationToken)
 		{
-			_logger.LogInformation("Getting health for kiosk: {kioskId}", kioskId);
+			_logger.LogTrace("Getting health for kiosk: {kioskId}", kioskId);
 
 			var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
 			var ledHealth = await CalculateHealth(kioskId, HeartbeatType.LED, cancellationToken);
@@ -169,6 +169,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 			catch (Exception ex)
 			{
+				// TODO: this was noisy in development
 				_logger.LogError(ex, "Error getting heartbeats for kiosk: {kioskId}", kioskId);
 				return HealthStatus.Unknown;
 			}

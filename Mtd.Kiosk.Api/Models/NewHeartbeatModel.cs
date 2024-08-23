@@ -8,5 +8,11 @@ namespace Mtd.Kiosk.Api.Models
 		public required HeartbeatType Type { get; set; }
 
 		public Heartbeat ToHeartbeat() => new Heartbeat(KioskId, Type);
+
+		public NewHeartbeatModel(string kioskId, HeartbeatType type)
+		{
+			KioskId = kioskId;
+			Type = type;
+		}
 	}
 }

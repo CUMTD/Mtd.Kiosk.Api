@@ -2,8 +2,8 @@
 {
 	public enum DepartureTypeEnum
 	{
-		led,
-		button,
-		lcd
+		Led,
+		Button,
+		Lcd
 	}
 }

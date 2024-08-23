@@ -11,10 +11,13 @@ namespace Mtd.Kiosk.Api.Models
 			var generalMessages = new List<SimpleGeneralMessage>();
 			foreach (var message in messageResult)
 			{
-				foreach (var stopId in message.StopIds)
+				if (message.StopIds != null && message.StopIds.Length > 0)
 				{
-					var simpleGeneralMessage = new SimpleGeneralMessage(stopId, message.Text, message.BlockRealtime);
-					generalMessages.Add(simpleGeneralMessage);
+					foreach (var stopId in message.StopIds)
+					{
+						var simpleGeneralMessage = new SimpleGeneralMessage(stopId, message.Text, message.BlockRealtime);
+						generalMessages.Add(simpleGeneralMessage);
+					}
 				}
 			}
 

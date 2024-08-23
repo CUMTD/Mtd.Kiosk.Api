@@ -13,11 +13,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
     <PackageReference Include="Mtd.Core" />
     <PackageReference Include="Mtd.Kiosk.IpDisplaysApi" />
+    <PackageReference Include="Mtd.Stopwatch.Core" />
+    <PackageReference Include="Mtd.Stopwatch.Infrastructure.EFCore" />
     <PackageReference Include="Polly.Extensions.Http" />
     <PackageReference Include="Seq.Extensions.Logging" />
     <PackageReference Include="Serilog" />

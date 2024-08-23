@@ -4,7 +4,7 @@ using Mtd.Led.Soap;
 
 namespace Mtd.Kiosk.Api.Controllers
 {
-	[Route("api/ledPreview")]
+	[Route("ledPreview")]
 	[ApiController]
 	public class LedPreviewController : ControllerBase
 	{
@@ -22,7 +22,7 @@ namespace Mtd.Kiosk.Api.Controllers
 		[Produces("image/png")]
 		public async Task<ActionResult> GetLedPreviewImage([FromQuery] string ledIp, CancellationToken cancellationToken)
 		{
-			if (!ledIp.StartsWith("192.168."))
+			if (ledIp != "10.128.17.35" && !ledIp.StartsWith("192.168."))
 			{
 				return BadRequest();
 			}
@@ -37,12 +37,12 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 			catch (TimeoutException)
 			{
-				_logger.LogWarning("Timeout getting led preview image");
+				_logger.LogWarning("Timeout getting Led preview image");
 				return StatusCode(404);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error getting led preview image");
+				_logger.LogError(ex, "Error getting Led preview image");
 				return StatusCode(500);
 			}
 
@@ -63,7 +63,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error downloading led preview image");
+				_logger.LogError(ex, "Error downloading Led preview image");
 				return StatusCode(500);
 			}
 		}

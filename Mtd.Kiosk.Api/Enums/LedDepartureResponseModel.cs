@@ -2,28 +2,28 @@
 
 namespace Mtd.Kiosk.Api.Models
 {
-	public class DepartureResponseModel
+	public class LedDepartureResponseModel
 	{
-		public IReadOnlyCollection<SimpleDeparture> Departures { get; set; }
+		public IReadOnlyCollection<LedDeparture> Departures { get; set; }
 
-		public DepartureResponseModel(IReadOnlyCollection<SimpleDeparture> departures)
+		public LedDepartureResponseModel(IReadOnlyCollection<LedDeparture> departures)
 		{
 			Departures = departures;
 		}
 	}
 
-	public class SimpleDeparture
+	public class LedDeparture
 	{
 		public string Route { get; set; }
 		public string Time { get; set; }
 
-		public SimpleDeparture(string route, string time)
+		public LedDeparture(string route, string time)
 		{
 			Route = route;
 			Time = time;
 		}
 
-		public SimpleDeparture(Departure departure)
+		public LedDeparture(Departure departure)
 		{
 
 			Route = departure.FriendlyRouteName.ToUpper();

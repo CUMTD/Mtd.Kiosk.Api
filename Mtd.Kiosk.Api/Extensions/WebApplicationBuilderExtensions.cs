@@ -8,6 +8,12 @@ using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
 using Mtd.Kiosk.RealTime;
 using Mtd.Kiosk.RealTime.Config;
+using Mtd.Stopwatch.Core.Entities.Schedule;
+using Mtd.Stopwatch.Core.Repositories.Schedule;
+using Mtd.Stopwatch.Core.Repositories.Transit;
+using Mtd.Stopwatch.Infrastructure.EFCore;
+using Mtd.Stopwatch.Infrastructure.EFCore.Repositories.Schedule;
+using Mtd.Stopwatch.Infrastructure.EFCore.Repositories.Transit;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
@@ -17,17 +23,14 @@ namespace Mtd.Kiosk.Api.Extensions
 {
 	internal static class WebApplicationBuilderExtensions
 	{
-		public static WebApplicationBuilder Configure(this WebApplicationBuilder builder) => builder.AddConfiguration().ConfigureLogging().ConfigureApi().ConfigureDI().ConfigureHTTPClient();
+		public static WebApplicationBuilder Configure(this WebApplicationBuilder builder) => builder
+			.AddConfiguration()
+			.ConfigureLogging()
+			.ConfigureApi()
+			.ConfigureDB()
+			.ConfigureDI()
+			.ConfigureHTTPClient();
 
-		private static WebApplicationBuilder ConfigureDI(this WebApplicationBuilder builder)
-		{
-			_ = builder.Services.AddScoped<IKioskRepository, KioskRepository>();
-			_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
-			_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-			_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
-
-			return builder;
-		}
 		private static WebApplicationBuilder AddConfiguration(this WebApplicationBuilder builder)
 		{
 			if (builder.Environment.IsDevelopment())
@@ -72,9 +75,38 @@ namespace Mtd.Kiosk.Api.Extensions
 				// options.UseLazyLoadingProxies();
 			});
 
+			_ = builder.Services.AddDbContextPool<StopwatchContext>((sp, options) =>
+			{
+				var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.StopwatchConnection;
+				options.UseSqlServer(connectionString);
+				// options.UseLazyLoadingProxies();
+			});
+
+			_ = builder.Services.AddScoped<IPublicRouteRepository<IReadOnlyCollection<PublicRoute>>, PublicRouteRepository>();
+			_ = builder.Services.AddScoped<IPublicRouteGroupRepository<IReadOnlyCollection<PublicRouteGroup>>, PublicRouteGroupRepository>();
+			_ = builder.Services.AddScoped<IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>>, RouteRepository>();
+
 			return builder;
 		}
+		private static WebApplicationBuilder ConfigureHTTPClient(this WebApplicationBuilder builder)
+		{
+			var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
 
+			var retryPolicy = HttpPolicyExtensions
+				.HandleTransientHttpError()
+				.Or<TimeoutRejectedException>()
+				.WaitAndRetryAsync(2, count => TimeSpan.FromMilliseconds(500 * Math.Pow(count, 2))); // 500, then 2000
+
+			var shortCircuitPolicy = HttpPolicyExtensions
+				.HandleTransientHttpError()
+				.Or<TimeoutRejectedException>()
+				.AdvancedCircuitBreakerAsync(0.75, TimeSpan.FromSeconds(60), 4, TimeSpan.FromSeconds(120));
+
+			var defaultPolicy = Policy.WrapAsync(timeoutPolicy, retryPolicy, shortCircuitPolicy);
+
+			builder.Services.AddHttpClient<RealTimeClient>().AddPolicyHandler(defaultPolicy);
+			return builder;
+		}
 		private static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
 		{
 			builder.Services.AddSerilog();
@@ -85,7 +117,6 @@ namespace Mtd.Kiosk.Api.Extensions
 
 			return builder;
 		}
-
 		private static WebApplicationBuilder ConfigureApi(this WebApplicationBuilder builder)
 		{
 			_ = builder.Services.AddControllers();
@@ -137,24 +168,33 @@ namespace Mtd.Kiosk.Api.Extensions
 
 			return builder;
 		}
-
-		private static WebApplicationBuilder ConfigureHTTPClient(this WebApplicationBuilder builder)
+		private static WebApplicationBuilder ConfigureDB(this WebApplicationBuilder builder)
 		{
-			var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
+			/*var conectionString = builder.Configuration.GetConnectionString("StopwatchConnection");
+			if (string.IsNullOrWhiteSpace(conectionString))
+			{
+				throw new InvalidOperationException("StopwatchConnection is not configured in user secrets");
+			}
 
-			var retryPolicy = HttpPolicyExtensions
-				.HandleTransientHttpError()
-				.Or<TimeoutRejectedException>()
-				.WaitAndRetryAsync(2, count => TimeSpan.FromMilliseconds(500 * Math.Pow(count, 2))); // 500, then 2000
+			_ = builder.Services.AddDbContextPool<StopwatchContext>((serviceProvider, options) =>
+			{
+				options.UseLazyLoadingProxies();
+				options.UseSqlServer(conectionString);
+			});*/
 
-			var shortCircuitPolicy = HttpPolicyExtensions
-				.HandleTransientHttpError()
-				.Or<TimeoutRejectedException>()
-				.AdvancedCircuitBreakerAsync(0.75, TimeSpan.FromSeconds(60), 4, TimeSpan.FromSeconds(120));
 
-			var defaultPolicy = Policy.WrapAsync(timeoutPolicy, retryPolicy, shortCircuitPolicy);
 
-			builder.Services.AddHttpClient<RealTimeClient>().AddPolicyHandler(defaultPolicy);
+			return builder;
+		}
+		private static WebApplicationBuilder ConfigureDI(this WebApplicationBuilder builder)
+		{
+			_ = builder.Services.AddScoped<IKioskRepository, KioskRepository>();
+			_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
+			_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+			_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
+
+			_ = builder.Services.AddMemoryCache();
+
 			return builder;
 		}
 	}
