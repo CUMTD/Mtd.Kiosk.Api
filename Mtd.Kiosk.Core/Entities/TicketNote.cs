@@ -10,6 +10,7 @@ public class TicketNote : GuidEntity, IEntity
 	public DateTime CreatedDate { get; set; }
 	public string CreatedBy { get; set; }
 	public bool Deleted { get; set; }
+	public virtual Ticket Ticket { get; set; }
 
 	[SetsRequiredMembers]
 	protected TicketNote() : base()
@@ -18,6 +19,7 @@ public class TicketNote : GuidEntity, IEntity
 		CreatedDate = DateTime.Now;
 		CreatedBy = string.Empty;
 		Deleted = false;
+		Ticket = new Ticket();
 	}
 
 	[SetsRequiredMembers]

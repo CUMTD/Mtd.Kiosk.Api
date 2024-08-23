@@ -11,7 +11,7 @@ public class Kiosk : GuidEntity, IEntity
 
 	[SetsRequiredMembers]
 
-	protected Kiosk()
+	public Kiosk()
 	{
 		Deleted = false;
 		Tickets = [];

@@ -12,17 +12,19 @@ public class Ticket : GuidEntity, IEntity
 	public string OpenedBy { get; set; }
 	public string? Description { get; set; }
 	public string Title { get; set; }
-
-	public virtual ICollection<TicketNote> TicketNotes { get; set; } = [];
+	public virtual Kiosk Kiosk { get; set; }
+	public virtual ICollection<TicketNote> Notes { get; set; } = [];
 
 	[SetsRequiredMembers]
-	protected Ticket() : base()
+	public Ticket() : base()
 	{
 		KioskId = string.Empty;
 		OpenDate = DateTime.Now;
 		OpenedBy = string.Empty;
 		Title = string.Empty;
 		Status = TicketStatusType.Open;
+		Kiosk = new Kiosk();
+		Notes = [];
 	}
 
 	[SetsRequiredMembers]

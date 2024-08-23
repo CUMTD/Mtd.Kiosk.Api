@@ -40,9 +40,9 @@ internal class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 		_ = builder
 			.Property(t => t.Description);
 
-		/*_ = builder
+		_ = builder
 			.HasOne(t => t.Kiosk)
 			.WithMany(k => k.Tickets)
-			.HasForeignKey(k => k.KioskId);*/
+			.HasForeignKey(t => t.KioskId);
 	}
 }

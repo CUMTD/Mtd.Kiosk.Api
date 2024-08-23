@@ -125,7 +125,7 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 		try
 		{
 			ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
-			ticket.TicketNotes.Add(note);
+			ticket.Notes.Add(note);
 			await _ticketRepository.CommitChangesAsync(cancellationToken);
 		}
 		catch (InvalidOperationException ex)

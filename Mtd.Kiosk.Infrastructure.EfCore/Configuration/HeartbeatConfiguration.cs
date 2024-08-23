@@ -20,5 +20,10 @@ internal class HeartbeatConfiguration : IEntityTypeConfiguration<Heartbeat>
 
 		_ = builder.Property(k => k.Type)
 			.IsRequired();
+
+		_ = builder
+			.HasOne(h => h.Kiosk)
+			.WithMany()
+			.HasForeignKey(h => h.KioskId);
 	}
 }
