@@ -34,6 +34,10 @@ body {
         background: var(--secondary-bg);
     }
 
+    .swagger-ui .topbar a svg {
+        margin-left: 6rem;
+    }
+
     .swagger-ui .info li, .swagger-ui .info p,
     .swagger-ui .info table,
     .swagger-ui .info .title,
@@ -86,10 +90,6 @@ body {
     color: var(--auth-button);
     border-color: var(--auth-button);
 }
-
-    .swagger-ui .btn.authorize svg {
-        fill: var(--auth-button);
-    }
 
 .swagger-ui .info a {
     color: var(--link);
