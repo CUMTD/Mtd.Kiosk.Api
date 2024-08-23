@@ -5,13 +5,14 @@ namespace Mtd.Kiosk.Core.Entities;
 
 public class Heartbeat : GuidEntity, IEntity
 {
-	public required DateTime Timestamp { get; set; } = DateTime.UtcNow;
-	public required string KioskId { get; set; }
-	public required HeartbeatType Type { get; set; }
+	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+	public string KioskId { get; set; }
+	public HeartbeatType Type { get; set; }
 
 	[SetsRequiredMembers]
 	protected Heartbeat() : base()
 	{
+		KioskId = string.Empty;
 		Timestamp = DateTime.UtcNow;
 	}
 

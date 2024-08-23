@@ -5,24 +5,23 @@ namespace Mtd.Kiosk.Core.Entities;
 
 public class Ticket : GuidEntity, IEntity
 {
-	public required string KioskId { get; set; }
+	public string KioskId { get; set; }
 	public TicketStatusType Status { get; set; }
 	public DateTime OpenDate { get; set; }
 	public DateTime? CloseDate { get; set; }
-	public required string OpenedBy { get; set; }
+	public string OpenedBy { get; set; }
 	public string? Description { get; set; }
+	public string Title { get; set; }
 
-	public required string Title { get; set; }
-
-	/*		[JsonIgnore]
-			public virtual Kiosk Kiosk { get; set; }*/
-
-	public virtual ICollection<TicketNote> TicketNotes { get; set; } = new List<TicketNote>();
+	public virtual ICollection<TicketNote> TicketNotes { get; set; } = [];
 
 	[SetsRequiredMembers]
 	protected Ticket() : base()
 	{
+		KioskId = string.Empty;
 		OpenDate = DateTime.Now;
+		OpenedBy = string.Empty;
+		Title = string.Empty;
 		Status = TicketStatusType.Open;
 	}
 

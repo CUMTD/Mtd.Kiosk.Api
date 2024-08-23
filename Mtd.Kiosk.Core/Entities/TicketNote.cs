@@ -6,16 +6,17 @@ namespace Mtd.Kiosk.Core.Entities;
 public class TicketNote : GuidEntity, IEntity
 {
 	public string? MarkdownBody { get; set; }
-	public required string TicketId { get; set; }
-	public required DateTime CreatedDate { get; set; }
-	public required string CreatedBy { get; set; }
-
-	public required bool Deleted { get; set; }
+	public string TicketId { get; set; }
+	public DateTime CreatedDate { get; set; }
+	public string CreatedBy { get; set; }
+	public bool Deleted { get; set; }
 
 	[SetsRequiredMembers]
-	public TicketNote() : base()
+	protected TicketNote() : base()
 	{
+		TicketId = string.Empty;
 		CreatedDate = DateTime.Now;
+		CreatedBy = string.Empty;
 		Deleted = false;
 	}
 
@@ -25,6 +26,5 @@ public class TicketNote : GuidEntity, IEntity
 		TicketId = ticketId;
 		MarkdownBody = markdownBody;
 		CreatedBy = createdBy;
-
 	}
 }
