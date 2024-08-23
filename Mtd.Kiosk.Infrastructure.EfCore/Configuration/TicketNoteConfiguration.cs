@@ -33,10 +33,6 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration
 				.HasDefaultValue(false)
 				.IsRequired();
 
-
-
-
 		}
 	}
-
 }

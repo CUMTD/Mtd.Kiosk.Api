@@ -3,7 +3,6 @@ using Mtd.Infrastructure.EFCore.Repositories;
 using Mtd.Kiosk.Core.Repositories;
 using System.Collections.Immutable;
 
-
 namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 {
 	public class KioskRepository(KioskContext context) : AsyncEFIdentifiableRepository<string, Core.Entities.Kiosk>(context), IKioskRepository
@@ -28,8 +27,6 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 				return kiosks.ToImmutableArray();
 
 			}
-
-
 		}
 	}
 }

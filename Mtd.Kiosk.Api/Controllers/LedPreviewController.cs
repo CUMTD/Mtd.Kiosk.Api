@@ -52,7 +52,7 @@ namespace Mtd.Kiosk.Api.Controllers
 			}
 
 			//assemble the link to the image
-			var imageLink = $"http://{ledIp}/{(response.fileName).Replace("\\", "/")}";
+			var imageLink = $"http://{ledIp}/{response.fileName.Replace("\\", "/")}";
 
 			try
 			{

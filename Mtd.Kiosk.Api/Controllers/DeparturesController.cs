@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
@@ -54,9 +53,6 @@ namespace Mtd.Kiosk.Api.Controllers
 				return StatusCode(StatusCodes.Status500InternalServerError);
 			}
 
-
-
-
 			var departures = result
 				.OrderBy(x => x.MinutesTillDeparture)
 				.ThenBy(x => x.RouteSortNumber)
@@ -88,7 +84,6 @@ namespace Mtd.Kiosk.Api.Controllers
 
 				var generalMessage = currentGeneralMessages.FirstOrDefault(x => x.StopIds != null && x.StopIds.Contains(stopId));
 
-
 				if (generalMessage != null)
 				{
 					if (generalMessage.BlockRealtime)
@@ -102,12 +97,7 @@ namespace Mtd.Kiosk.Api.Controllers
 						lcdGeneralMessage = new LcdGeneralMessage(generalMessage);
 					}
 				}
-
-
 			}
-
-
-
 
 			var departures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
 			if (departures == null)
@@ -131,15 +121,13 @@ namespace Mtd.Kiosk.Api.Controllers
 					.Take(7)
 				.OrderBy(d => d.FirstOrDefault().RouteNumber);
 
-
 				var lcdDepartures = new List<LcdDeparture>();
 
 				foreach (var group in groupedDepartures)
 				{
 					var lcdDepartureTimes = new List<LcdDepartureTime>();
 
-
-					for (int i = 0; i < 3 && i < group.Count(); i++)
+					for (var i = 0; i < 3 && i < group.Count(); i++)
 					{
 						lcdDepartureTimes.Add(new LcdDepartureTime(group.ElementAt(i)));
 					}
@@ -150,6 +138,7 @@ namespace Mtd.Kiosk.Api.Controllers
 
 					lcdDepartures.Add(lcdDeparture);
 				}
+
 				return new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder), lcdGeneralMessage);
 
 			}
@@ -170,6 +159,7 @@ namespace Mtd.Kiosk.Api.Controllers
 					_logger.LogError(ex, "Error getting public routes from database");
 					return null;
 				}
+
 				_cache.Set(CACHE_KEY, publicRoutes, TimeSpan.FromMinutes(15));
 			}
 

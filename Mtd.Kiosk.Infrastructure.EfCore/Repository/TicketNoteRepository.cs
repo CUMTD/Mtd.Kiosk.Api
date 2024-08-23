@@ -7,6 +7,5 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 	public class TicketNoteRepository(KioskContext context) : AsyncEFIdentifiableRepository<string, TicketNote>(context), ITicketNoteRepository
 	{
 
-
 	}
 }

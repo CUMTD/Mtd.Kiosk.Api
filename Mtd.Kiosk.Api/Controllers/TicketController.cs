@@ -121,7 +121,7 @@ namespace Mtd.Kiosk.Api.Controllers
 		{
 			_logger.LogInformation("Adding comment to ticket: {ticketId}", ticketId);
 			Ticket ticket;
-			TicketNote note = newTicketNoteModel.ToTicketNote(ticketId);
+			var note = newTicketNoteModel.ToTicketNote(ticketId);
 			try
 			{
 				ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
@@ -141,8 +141,5 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			return Ok(ticket);
 		}
-
-
-
 	}
 }

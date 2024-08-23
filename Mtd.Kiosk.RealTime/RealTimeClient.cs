@@ -85,7 +85,6 @@ namespace Mtd.Kiosk.RealTime
 				_logger.LogError("Error getting real-time data for stop {StopId}: {StatusCode}", stopId, httpResponseMessage.StatusCode);
 			}
 
-
 			try
 			{
 				using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);

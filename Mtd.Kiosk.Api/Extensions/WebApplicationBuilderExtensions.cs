@@ -182,8 +182,6 @@ namespace Mtd.Kiosk.Api.Extensions
 				options.UseSqlServer(conectionString);
 			});*/
 
-
-
 			return builder;
 		}
 		private static WebApplicationBuilder ConfigureDI(this WebApplicationBuilder builder)

@@ -10,6 +10,6 @@ namespace Mtd.Kiosk.Api.Models
 
 		public required string Title { get; set; }
 
-		public Ticket ToTicket() => new Ticket(KioskId, OpenedBy, Title, Description);
+		public Ticket ToTicket() => new(KioskId, OpenedBy, Title, Description);
 	}
 }

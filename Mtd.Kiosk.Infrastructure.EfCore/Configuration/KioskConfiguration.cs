@@ -16,5 +16,4 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration
 				.IsRequired();
 		}
 	}
-
 }

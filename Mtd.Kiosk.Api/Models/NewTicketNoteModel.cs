@@ -7,6 +7,6 @@ namespace Mtd.Kiosk.Api.Models
 		public string? MarkdownBody { get; set; }
 		public required string CreatedBy { get; set; }
 
-		public TicketNote ToTicketNote(string ticketId) => new TicketNote(ticketId, MarkdownBody, CreatedBy);
+		public TicketNote ToTicketNote(string ticketId) => new(ticketId, MarkdownBody, CreatedBy);
 	}
 }

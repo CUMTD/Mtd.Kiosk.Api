@@ -28,9 +28,5 @@ namespace Mtd.Kiosk.RealTime.Entities
 
 		[JsonPropertyName("stopIds")]
 		public required string[] StopIds { get; set; }
-
-
 	}
-
-
 }

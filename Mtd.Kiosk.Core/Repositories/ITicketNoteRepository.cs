@@ -5,7 +5,5 @@ namespace Mtd.Kiosk.Core.Repositories
 	public interface ITicketNoteRepository : IRepository<TicketNote>
 	{
 
-
-
 	}
 }

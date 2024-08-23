@@ -9,7 +9,6 @@ namespace Mtd.Kiosk.Infrastructure.EfCore.Repository
 	public class HeartbeatRepository(KioskContext context) : AsyncEFIdentifiableRepository<string, Mtd.Kiosk.Core.Entities.Heartbeat>(context), IHeartbeatRepository
 	{
 
-
 		public async Task<IReadOnlyCollection<Heartbeat>> GetByIdentityAndHeartbeatTypeAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken)
 		{
 			var heartbeats = await _dbSet

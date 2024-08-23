@@ -12,7 +12,6 @@ namespace Mtd.Kiosk.Api.Controllers
 		private readonly ITicketNoteRepository _ticketNoteRepository = ticketNoteRepository ?? throw new ArgumentNullException(nameof(ticketNoteRepository));
 		private readonly ILogger<TicketNoteController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-
 		// delete ticketnote
 		[HttpDelete("{noteId}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -70,9 +69,5 @@ namespace Mtd.Kiosk.Api.Controllers
 
 			return Ok();
 		}
-
-
-
-
 	}
 }

@@ -3,7 +3,7 @@ using Mtd.Stopwatch.Core.Entities.Schedule;
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
-namespace Mtd.Kiosk.Api.Models
+namespace Mtd.Kiosk.Api.Enums
 {
 	public class LcdDepartureResponseModel
 	{
@@ -49,7 +49,8 @@ namespace Mtd.Kiosk.Api.Models
 			Name = publicRoute.PublicRouteGroup.RouteName;
 			Direction = direction;
 			ForegroundHexColor = $"#{publicRoute.PublicRouteGroup.HexTextColor}";
-			BackgroundHexColor = $"#{publicRoute.PublicRouteGroup.HexColor}"; ;
+			BackgroundHexColor = $"#{publicRoute.PublicRouteGroup.HexColor}";
+			;
 			DepartureTimes = lcdDepartures;
 			SortOrder = publicRoute.PublicRouteGroup.SortNumber;
 		}
