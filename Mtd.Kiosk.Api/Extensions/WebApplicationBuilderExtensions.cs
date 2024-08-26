@@ -19,6 +19,7 @@ using Polly.Extensions.Http;
 using Polly.Timeout;
 using Polly.Wrap;
 using Serilog;
+using System.Reflection;
 
 namespace Mtd.Kiosk.Api.Extensions;
 
@@ -122,6 +123,10 @@ internal static class WebApplicationBuilderExtensions
 				{ securityScheme, Array.Empty <string>() }
 			  });
 
+			var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+			var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+			options.IncludeXmlComments(xmlPath);
+
 		});
 		_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
 
@@ -167,7 +172,7 @@ internal static class WebApplicationBuilderExtensions
 			.AddPolicyHandler((serviceProvider, request) =>
 			{
 				// Resolve the logger from the service provider
-				var logger = serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger>();
+				var logger = serviceProvider.GetRequiredService<ILogger<WebApplication>>();
 
 				// Get the default policy with logging
 				return GetDefaultPolicy(logger);
@@ -175,7 +180,7 @@ internal static class WebApplicationBuilderExtensions
 
 		return builder;
 	}
-	private static AsyncPolicyWrap<HttpResponseMessage> GetDefaultPolicy(Microsoft.Extensions.Logging.ILogger logger)
+	private static AsyncPolicyWrap<HttpResponseMessage> GetDefaultPolicy(ILogger<WebApplication> logger)
 	{
 		var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
 
@@ -185,10 +190,7 @@ internal static class WebApplicationBuilderExtensions
 			.WaitAndRetryAsync(
 				2,
 				count => TimeSpan.FromMilliseconds(500 * Math.Pow(count, 2)), // 500, then 2000
-				(outcome, timespan, retryAttempt, context) =>
-				{
-					logger.LogWarning(outcome.Exception, "Retry attempt {RetryAttempt} after {Delay}ms due to {Exception}.", retryAttempt, timespan.TotalMilliseconds, outcome.Exception?.Message);
-				});
+				(outcome, timespan, retryAttempt, context) => logger.LogWarning(outcome.Exception, "Retry attempt {RetryAttempt} after {Delay}ms due to {Exception}.", retryAttempt, timespan.TotalMilliseconds, outcome.Exception?.Message));
 
 		var circuitBreakerPolicy = HttpPolicyExtensions
 			.HandleTransientHttpError()

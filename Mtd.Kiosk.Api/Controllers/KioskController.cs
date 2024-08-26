@@ -6,7 +6,7 @@ using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
-[Route("kiosk")]
+[Route("kiosks")]
 [ApiController]
 public class KioskController : ControllerBase
 {
@@ -52,7 +52,7 @@ public class KioskController : ControllerBase
 		return Ok(kiosk);
 	}
 
-	[HttpGet("all")]
+	[HttpGet("")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<Ticket>>> GetAllKiosks(CancellationToken cancellationToken)
@@ -91,7 +91,7 @@ public class KioskController : ControllerBase
 		return CreatedAtAction(nameof(GetKiosk), new { KioskId = kiosk.Id }, kiosk);
 	}
 
-	[HttpGet("all/health")]
+	[HttpGet("health")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult> GetAllKioskHealth(CancellationToken cancellationToken)

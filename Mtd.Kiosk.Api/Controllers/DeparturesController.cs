@@ -38,8 +38,8 @@ public class DeparturesController : ControllerBase
 		_logger = logger;
 	}
 
-	[HttpGet("led/{stopId}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[HttpGet("{stopId}/led")]
+	[ProducesResponseType<IEnumerable<LedDeparture>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures(string stopId, [FromQuery] string kioskId, CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ public class DeparturesController : ControllerBase
 		return Ok(departures);
 	}
 
-	[HttpGet("lcd/{stopId}")]
+	[HttpGet("{stopId}/lcd")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]

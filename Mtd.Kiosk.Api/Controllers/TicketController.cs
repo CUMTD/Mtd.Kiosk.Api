@@ -5,7 +5,7 @@ using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
-[Route("ticket")]
+[Route("tickets")]
 [ApiController]
 public class TicketController(ITicketRepository ticketRepository, ILogger<TicketController> logger) : ControllerBase
 {
@@ -37,7 +37,7 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 		return Ok(ticket);
 	}
 
-	[HttpGet("all")]
+	[HttpGet("")]
 	[ProducesResponseType(typeof(IEnumerable<Ticket>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<Ticket>>> GetAllTickets([FromQuery] bool includeClosed, CancellationToken cancellationToken)
@@ -85,18 +85,18 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 		return CreatedAtAction(nameof(GetTicket), new { TicketId = ticket.Id }, ticket);
 	}
 
-	[HttpPatch("{ticketId}/status/{status}")]
+	[HttpPatch("{ticketId}/status")]
 	[ProducesResponseType(typeof(Ticket), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> UpdateTicket(string ticketId, TicketStatusType status, CancellationToken cancellationToken)
+	public async Task<ActionResult<Ticket>> UpdateTicket(string ticketId, [FromQuery] TicketStatusType newStatus, CancellationToken cancellationToken)
 	{
 
 		Ticket ticket;
 		try
 		{
 			ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
-			ticket.Status = status;
+			ticket.Status = newStatus;
 			await _ticketRepository.CommitChangesAsync(cancellationToken);
 		}
 		catch (InvalidOperationException ex)

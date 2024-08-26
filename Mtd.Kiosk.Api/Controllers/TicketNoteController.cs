@@ -5,7 +5,7 @@ using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
-[Route("ticket-note")]
+[Route("ticket-notes")]
 [ApiController]
 public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, ILogger<TicketNoteController> logger) : ControllerBase
 {
