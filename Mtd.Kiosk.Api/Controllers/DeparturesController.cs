@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
 using Mtd.Kiosk.RealTime.Entities;
 using Mtd.Stopwatch.Core.Repositories.Transit;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
@@ -59,10 +61,16 @@ public class DeparturesController : ControllerBase
 	/// <returns>An array of LED departures</returns>
 	[HttpGet("{stopId}/led")]
 	[ProducesResponseType<IEnumerable<LedDeparture>>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures([StopIdValidation(true)] string stopId, [FromQuery, KioskIdValidation(false)] string? kioskId, CancellationToken cancellationToken)
 	{
+		if (string.IsNullOrEmpty(stopId))
+		{
+			return BadRequest();
+		}
+
 		// log the heartbeat. This is done in a "fire and forget" pattern.
 		LogHeartbeat(HeartbeatType.LED, kioskId);
 
@@ -73,7 +81,7 @@ public class DeparturesController : ControllerBase
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Failed to get deparutres from real-time client for {stopId}.", stopId);
+			_logger.LogError(ex, "Failed to get departures from real-time client for {stopId}.", stopId);
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
@@ -110,7 +118,15 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken, [FromQuery] int max = 7)
+	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(
+		[Required, MinLength(2), RegularExpression("^[A-Za-z][A-Za-z0-9]+(:[0-9])?$")]
+		string stopId,
+		[FromQuery, StringLength(32), RegularExpression("[0-9a-z]{32}")]
+		string? kioskId,
+		CancellationToken cancellationToken,
+		[FromQuery, Range(1, int.MaxValue)]
+		int max = 7
+	)
 	{
 		// log the heartbeat. This is done in a "fire and forget" pattern.
 		LogHeartbeat(HeartbeatType.LCD, kioskId);
@@ -172,7 +188,7 @@ public class DeparturesController : ControllerBase
 			lcdDepartures.Add(lcdDeparture);
 		}
 
-		return new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder));
+		return Ok(new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder)));
 	}
 
 	#region Helpers
