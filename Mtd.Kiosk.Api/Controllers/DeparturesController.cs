@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Mtd.Kiosk.Api.Models.Enums;
+using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
@@ -114,7 +114,7 @@ public class DeparturesController : ControllerBase
 			{
 				if (generalMessage.BlockRealtime)
 				{
-					return new LcdDepartureResponseModel(new List<LcdDeparture>(), new LcdGeneralMessage(generalMessage));
+					return new LcdDepartureResponseModel(new List<LcdDepartureGroup>(), new LcdGeneralMessage(generalMessage));
 
 				}
 				else
@@ -147,7 +147,7 @@ public class DeparturesController : ControllerBase
 				.Take(7)
 				.OrderBy(d => d.First().RouteNumber);
 
-			var lcdDepartures = new List<LcdDeparture>();
+			var lcdDepartures = new List<LcdDepartureGroup>();
 
 			foreach (var group in groupedDepartures)
 			{
@@ -161,7 +161,7 @@ public class DeparturesController : ControllerBase
 				var publicRoute = routes.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key).PublicRoute;
 
 				// public route should never be null here since we check for it in our first statement above.
-				var lcdDeparture = new LcdDeparture(publicRoute!, lcdDepartureTimes, group.First().Direction);
+				var lcdDeparture = new LcdDepartureGroup(publicRoute!, lcdDepartureTimes, group.First().Direction);
 
 				lcdDepartures.Add(lcdDeparture);
 			}

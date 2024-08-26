@@ -5,11 +5,6 @@ using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
-/// <summary>
-/// Controller for ticket notes/comments.
-/// </summary>
-/// <param name="ticketNoteRepository"></param>
-/// <param name="logger"></param>
 [Route("ticket-notes")]
 [ApiController]
 public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, ILogger<TicketNoteController> logger) : ControllerBase
@@ -17,16 +12,11 @@ public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, IL
 	private readonly ITicketNoteRepository _ticketNoteRepository = ticketNoteRepository ?? throw new ArgumentNullException(nameof(ticketNoteRepository));
 	private readonly ILogger<TicketNoteController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-	/// <summary>
-	/// Deletes a ticket note/comment.
-	/// </summary>
-	/// <param name="noteId">The note/comment of the ticket to be deleted.</param>
-	/// <param name="cancellationToken"></param>
-	/// <returns></returns>
+	// delete ticketnote
 	[HttpDelete("{noteId}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult> DeleteTicketNoteAsync(string noteId, CancellationToken cancellationToken)
+	public async Task<IActionResult> DeleteTicketNoteAsync(string noteId, CancellationToken cancellationToken)
 	{
 		TicketNote ticketNote;
 
@@ -52,18 +42,11 @@ public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, IL
 		return NoContent();
 	}
 
-	/// <summary>
-	/// Updates a ticket note/comment with a new body.
-	/// </summary>
-	/// <param name="noteId">The id of the ticket note</param>
-	/// <param name="updatedTicketModel"></param>
-	/// <param name="cancellationToken"></param>
-	/// <returns></returns>
 	[HttpPatch("{noteId}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> UpdateTicketNoteAsync(string noteId, [FromBody] UpdatedTicketModel updatedTicketModel, CancellationToken cancellationToken)
+	public async Task<IActionResult> UpdateTicketNoteAsync(string noteId, [FromBody] UpdateTicketModel updatedTicketModel, CancellationToken cancellationToken)
 	{
 		var ticketNote = await _ticketNoteRepository.GetByIdentityAsync(noteId, cancellationToken);
 

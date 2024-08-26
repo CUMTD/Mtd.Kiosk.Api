@@ -64,14 +64,9 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 
 		try
 		{
-			if (includeClosed)
-			{
-				tickets = await _ticketRepository.GetAllAsync(cancellationToken);
-			}
-			else
-			{
-				tickets = await _ticketRepository.GetAllOpenTicketsAsync(cancellationToken);
-			}
+			tickets = includeClosed
+				? await _ticketRepository.GetAllAsync(cancellationToken)
+				: await _ticketRepository.GetAllOpenTicketsAsync(cancellationToken);
 		}
 		catch (Exception ex)
 		{

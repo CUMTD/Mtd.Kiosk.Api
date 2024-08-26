@@ -27,5 +27,5 @@ public class NewTicketModel
 	/// Converts the model to a Ticket.
 	/// </summary>
 	/// <returns>A ticket object.</returns>
-	public Ticket ToTicket() => new(KioskId, OpenedBy, Title, Description);
+	internal Ticket ToTicket() => new(KioskId, OpenedBy, Title, Description);
 }

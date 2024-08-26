@@ -3,7 +3,7 @@
 /// <summary>
 /// Model for updating a ticket.
 /// </summary>
-public class UpdatedTicketModel
+public class UpdateTicketModel
 {
 	/// <summary>
 	/// The body of the ticket, in markdown format.

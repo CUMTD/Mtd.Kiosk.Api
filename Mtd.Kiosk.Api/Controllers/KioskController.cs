@@ -172,7 +172,7 @@ public class KioskController : ControllerBase
 	/// <param name="cancellationToken"></param>
 	/// <returns>A KioskHealthResponseModel object.</returns>
 	[NonAction]
-	public async Task<KioskHealthResponseModel> KioskHealth(string kioskId, CancellationToken cancellationToken)
+	private async Task<KioskHealthResponseModel> KioskHealth(string kioskId, CancellationToken cancellationToken)
 	{
 		_logger.LogTrace("Getting health for kiosk: {kioskId}", kioskId);
 
@@ -182,11 +182,8 @@ public class KioskController : ControllerBase
 
 		var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(kioskId, cancellationToken);
 
-		// return json object with health status of each component
-		var overallHealth = new[] { buttonHealth, ledHealth, lcdHealth }.Max();
 		var healthStatuses = new IndividualHealthStatuses(buttonHealth, ledHealth, lcdHealth);
-
-		return new KioskHealthResponseModel(kioskId, overallHealth, healthStatuses, openTicketCount);
+		return new KioskHealthResponseModel(kioskId, healthStatuses, openTicketCount);
 	}
 
 	// calculate health for each possible HeartbeatType

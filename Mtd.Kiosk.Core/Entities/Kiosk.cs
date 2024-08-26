@@ -1,21 +1,17 @@
 ﻿using Mtd.Core.Entities;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Mtd.Kiosk.Core.Entities;
 
-public class Kiosk : GuidEntity, IEntity
+[method: SetsRequiredMembers]
+public class Kiosk() : GuidEntity, IEntity
 {
-	public bool Deleted { get; set; }
+	public bool Deleted { get; set; } = false;
 	// dont want to auto include tickets
-	public virtual ICollection<Ticket> Tickets { get; set; }
 
-	[SetsRequiredMembers]
-
-	public Kiosk()
-	{
-		Deleted = false;
-		Tickets = [];
-	}
+	[JsonIgnore]
+	public virtual ICollection<Ticket> Tickets { get; set; } = [];
 
 	[SetsRequiredMembers]
 

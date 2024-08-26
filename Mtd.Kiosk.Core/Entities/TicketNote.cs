@@ -1,5 +1,6 @@
 ﻿using Mtd.Core.Entities;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Mtd.Kiosk.Core.Entities;
 
@@ -10,6 +11,8 @@ public class TicketNote : GuidEntity, IEntity
 	public DateTime CreatedDate { get; set; }
 	public string CreatedBy { get; set; }
 	public bool Deleted { get; set; }
+
+	[JsonIgnore]
 	public virtual Ticket Ticket { get; set; }
 
 	[SetsRequiredMembers]
