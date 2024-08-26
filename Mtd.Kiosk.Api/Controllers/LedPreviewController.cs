@@ -13,7 +13,11 @@ public class LedPreviewController : ControllerBase
 {
 	private readonly HttpClient _httpClient;
 	private readonly ILogger<LedPreviewController> _logger;
-
+	/// <summary>
+	/// Constructor for LedPreviewController.
+	/// </summary>
+	/// <param name="httpClient"></param>
+	/// <param name="logger"></param>
 	public LedPreviewController(HttpClient httpClient, ILogger<LedPreviewController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(httpClient);
@@ -35,7 +39,7 @@ public class LedPreviewController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[Produces("image/png")]
-	public async Task<ActionResult> GetLedPreviewImage([FromQuery] string ledIp, CancellationToken cancellationToken)
+	public async Task<ActionResult<FileContentResult>> GetLedPreviewImage([FromQuery] string ledIp, CancellationToken cancellationToken)
 	{
 		// TODO: We should't hard code this sort of thing in.
 		if (ledIp != "10.128.17.35" && !ledIp.StartsWith("192.168."))
