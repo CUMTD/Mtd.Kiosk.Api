@@ -9,8 +9,8 @@ namespace Mtd.Kiosk.Api.Attributes;
 /// Ensures the Kiosk ID is exactly 32 characters long and contains only lowercase letters and digits.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-public class KioskIdValidationAttribute(bool required = false) : ValidationAttribute
+[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+public class GuidIdAttribute(bool required) : ValidationAttribute
 {
 	private static readonly Regex _kioskIdRegex = new("^[0-9a-z]{32}$", RegexOptions.Compiled);
 
@@ -22,7 +22,7 @@ public class KioskIdValidationAttribute(bool required = false) : ValidationAttri
 		{
 			if (required)
 			{
-				return new ValidationResult("A kiosk id is required.");
+				return new ValidationResult("A GUID is required.");
 			}
 
 			return ValidationResult.Success;
@@ -31,7 +31,7 @@ public class KioskIdValidationAttribute(bool required = false) : ValidationAttri
 		if (value is not string stringValue || !_kioskIdRegex.IsMatch(stringValue))
 		{
 			// Return a ValidationResult with the error message
-			return new ValidationResult("The Kiosk ID format is invalid. It must be exactly 32 characters long, containing only lowercase letters and digits.");
+			return new ValidationResult("The GUID format is invalid. It must be exactly 32 characters long, containing only lowercase letters and digits.");
 		}
 
 		// If valid, return Success (using null-forgiving operator)

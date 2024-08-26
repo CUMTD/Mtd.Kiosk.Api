@@ -61,10 +61,10 @@ public class DeparturesController : ControllerBase
 	/// <returns>An array of LED departures</returns>
 	[HttpGet("{stopId}/led")]
 	[ProducesResponseType<IEnumerable<LedDeparture>>(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures([StopIdValidation(true)] string stopId, [FromQuery, KioskIdValidation(false)] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures([StopId(true)] string stopId, [FromQuery, GuidId(false)] string? kioskId, CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrEmpty(stopId))
 		{
@@ -116,6 +116,7 @@ public class DeparturesController : ControllerBase
 	/// <returns>An array of LLcdDepartureGroup objects</returns>
 	[HttpGet("{stopId}/lcd")]
 	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(

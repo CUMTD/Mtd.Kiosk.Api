@@ -7,4 +7,6 @@ public interface IHeartbeatRepository : IRepository<Heartbeat>
 
 	Task<IReadOnlyCollection<Heartbeat>> GetByIdentityAndHeartbeatTypeAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken);
 
+	Task<Heartbeat?> GetMostRecentHeartbeatOfTypeOrDefaultAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken);
+
 }

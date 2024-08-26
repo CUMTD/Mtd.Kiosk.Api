@@ -1,4 +1,6 @@
-﻿using Mtd.Kiosk.Core.Entities;
+﻿using Mtd.Kiosk.Api.Attributes;
+using Mtd.Kiosk.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mtd.Kiosk.Api.Models;
 
@@ -10,10 +12,12 @@ public class NewTicketModel
 	/// <summary>
 	/// The id of the kiosk that the ticket was opened on.
 	/// </summary>
+	[GuidId(true)]
 	public required string KioskId { get; set; }
 	/// <summary>
 	/// The name of the user who opened the ticket.
 	/// </summary>
+	[Required, RegularExpression("/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/\r\n")]
 	public required string OpenedBy { get; set; }
 	/// <summary>
 	/// The description of the ticket.
@@ -22,6 +26,8 @@ public class NewTicketModel
 	/// <summary>
 	/// The title of the ticket.
 	/// </summary>
+	///
+	[Required]
 	public required string Title { get; set; }
 	/// <summary>
 	/// Converts the model to a Ticket.

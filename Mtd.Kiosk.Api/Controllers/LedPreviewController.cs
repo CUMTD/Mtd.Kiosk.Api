@@ -1,5 +1,6 @@
 ﻿using IpDisplaysSoapService;
 using Microsoft.AspNetCore.Mvc;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Led.Soap;
 
 namespace Mtd.Kiosk.Api.Controllers;
@@ -34,19 +35,13 @@ public class LedPreviewController : ControllerBase
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A PNG image representing the current contents of the LED sign.</returns>
 	[HttpGet("")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType<FileResult>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[Produces("image/png")]
-	public async Task<ActionResult> GetLedPreviewImage([FromQuery] string ledIp, CancellationToken cancellationToken)
+	public async Task<ActionResult> GetLedPreviewImage([FromQuery, IpAddress(true)] string ledIp, CancellationToken cancellationToken)
 	{
-		// TODO: We should't hard code this sort of thing in.
-		if (ledIp != "10.128.17.35" && !ledIp.StartsWith("192.168."))
-		{
-			return BadRequest();
-		}
-
 		GetScreenSnapshotResponse response;
 		try
 		{

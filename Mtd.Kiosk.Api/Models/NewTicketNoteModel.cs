@@ -1,4 +1,5 @@
 ﻿using Mtd.Kiosk.Core.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mtd.Kiosk.Api.Models;
 
@@ -14,6 +15,7 @@ public class NewTicketNoteModel
 	/// <summary>
 	/// The name of the user who created the ticket note.
 	/// </summary>
+	[Required]
 	public required string CreatedBy { get; set; }
 	/// <summary>
 	/// Converts the model to a TicketNote.

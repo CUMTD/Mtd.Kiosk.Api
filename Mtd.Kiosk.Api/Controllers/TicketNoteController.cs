@@ -1,21 +1,37 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mtd.Kiosk.Api.Controllers;
+
+// TODO: Is this needed? What is there difference between ticket-notes and /tickets/{ticketId}/comment?
 
 /// <summary>
 /// Controller for ticket notes.
 /// </summary>
-/// <param name="ticketNoteRepository"></param>
-/// <param name="logger"></param>
 [Route("ticket-notes")]
 [ApiController]
-public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, ILogger<TicketNoteController> logger) : ControllerBase
+public class TicketNoteController : ControllerBase
 {
-	private readonly ITicketNoteRepository _ticketNoteRepository = ticketNoteRepository ?? throw new ArgumentNullException(nameof(ticketNoteRepository));
-	private readonly ILogger<TicketNoteController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+	private readonly ITicketNoteRepository _ticketNoteRepository;
+	private readonly ILogger<TicketNoteController> _logger;
+
+	/// <summary>
+	/// Constructor for TicketNoteController.
+	/// </summary>
+	/// <param name="ticketNoteRepository"></param>
+	/// <param name="logger"></param>
+	public TicketNoteController(ITicketNoteRepository ticketNoteRepository, ILogger<TicketNoteController> logger)
+	{
+		ArgumentNullException.ThrowIfNull(ticketNoteRepository);
+		ArgumentNullException.ThrowIfNull(logger);
+
+		_ticketNoteRepository = ticketNoteRepository;
+		_logger = logger;
+	}
 
 	/// <summary>
 	/// Delete a ticket note/comment.
@@ -24,12 +40,13 @@ public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, IL
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	[HttpDelete("{noteId}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult> DeleteTicketNoteAsync(string noteId, CancellationToken cancellationToken)
+	public async Task<ActionResult> DeleteTicketNoteAsync([GuidId(true)] string noteId, CancellationToken cancellationToken)
 	{
 		TicketNote ticketNote;
-
 		try
 		{
 
@@ -61,21 +78,31 @@ public class TicketNoteController(ITicketNoteRepository ticketNoteRepository, IL
 	/// <returns></returns>
 	[HttpPatch("{noteId}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> UpdateTicketNoteAsync(string noteId, [FromBody] UpdateTicketModel updatedTicketModel, CancellationToken cancellationToken)
+	public async Task<ActionResult> UpdateTicketNoteAsync([GuidId(true)] string noteId, [FromBody, Required] UpdateTicketModel updatedTicketModel, CancellationToken cancellationToken)
 	{
-		var ticketNote = await _ticketNoteRepository.GetByIdentityAsync(noteId, cancellationToken);
+		TicketNote? ticketNote;
+		try
+		{
+			ticketNote = await _ticketNoteRepository.GetByIdentityOrDefaultAsync(noteId, cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to fetch note with id {noteId}", noteId);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
 
 		if (ticketNote == null)
 		{
 			return NotFound();
 		}
 
+		ticketNote.MarkdownBody = updatedTicketModel.MarkdownBody;
+
 		try
 		{
-			ticketNote.MarkdownBody = updatedTicketModel.MarkdownBody;
-
 			await _ticketNoteRepository.CommitChangesAsync(cancellationToken);
 		}
 		catch (Exception ex)

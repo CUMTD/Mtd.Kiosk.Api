@@ -10,9 +10,9 @@ namespace Mtd.Kiosk.Api.Attributes;
 /// </summary>
 /// <param name="required"></param>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 
-public class StopIdValidationAttribute(bool required = true) : ValidationAttribute
+public class StopIdAttribute(bool required) : ValidationAttribute
 {
 	private static readonly Regex _idRegex = new(@"^[A-Za-z][A-Za-z0-9]+(:[0-9])?$", RegexOptions.Compiled);
 

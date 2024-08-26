@@ -1,21 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
+using System.ComponentModel.DataAnnotations;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
 /// <summary>
 /// Controller for tickets.
 /// </summary>
-/// <param name="ticketRepository"></param>
-/// <param name="logger"></param>
 [Route("tickets")]
 [ApiController]
-public class TicketController(ITicketRepository ticketRepository, ILogger<TicketController> logger) : ControllerBase
+public class TicketController : ControllerBase
 {
-	private readonly ITicketRepository _ticketRepository = ticketRepository ?? throw new ArgumentNullException(nameof(ticketRepository));
-	private readonly ILogger<TicketController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+	private readonly ITicketRepository _ticketRepository;
+	private readonly ILogger<TicketController> _logger;
+
+	/// <summary>
+	/// Constructor for Ticket Controller.
+	/// </summary>
+	/// <param name="ticketRepository"></param>
+	/// <param name="logger"></param>
+	public TicketController(ITicketRepository ticketRepository, ILogger<TicketController> logger)
+	{
+		ArgumentNullException.ThrowIfNull(ticketRepository);
+		ArgumentNullException.ThrowIfNull(logger);
+
+		_ticketRepository = ticketRepository;
+		_logger = logger;
+	}
 
 	/// <summary>
 	/// Gets a ticket by its id.
@@ -25,9 +39,10 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 	/// <returns>A ticket.</returns>
 	[HttpGet("{ticketId}")]
 	[ProducesResponseType<Ticket>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> GetTicket(string ticketId, CancellationToken cancellationToken)
+	public async Task<ActionResult<Ticket>> GetTicket([GuidId(true)] string ticketId, CancellationToken cancellationToken)
 	{
 		Ticket ticket;
 		try
@@ -77,6 +92,7 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 		return Ok(tickets);
 
 	}
+
 	/// <summary>
 	/// Creates a new ticket in the database.
 	/// </summary>
@@ -85,8 +101,9 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 	/// <returns>The ticket, if successful.</returns>
 	[HttpPost]
 	[ProducesResponseType<Ticket>(StatusCodes.Status201Created)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> CreateTicket(NewTicketModel newTicketModel, CancellationToken cancellationToken)
+	public async Task<ActionResult<Ticket>> CreateTicket([Required] NewTicketModel newTicketModel, CancellationToken cancellationToken)
 	{
 		var ticket = newTicketModel.ToTicket();
 		try
@@ -100,7 +117,7 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 			return StatusCode(500);
 		}
 
-		return CreatedAtAction(nameof(GetTicket), new { TicketId = ticket.Id }, ticket);
+		return CreatedAtAction(nameof(CreateTicket), new { TicketId = ticket.Id }, ticket);
 	}
 
 	/// <summary>
@@ -112,9 +129,10 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 	/// <returns></returns>
 	[HttpPatch("{ticketId}/status")]
 	[ProducesResponseType<Ticket>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> UpdateTicket(string ticketId, [FromQuery] TicketStatusType newStatus, CancellationToken cancellationToken)
+	public async Task<ActionResult<Ticket>> UpdateTicket([GuidId(true)] string ticketId, [FromQuery, Required] TicketStatusType newStatus, CancellationToken cancellationToken)
 	{
 
 		Ticket ticket;
@@ -147,9 +165,10 @@ public class TicketController(ITicketRepository ticketRepository, ILogger<Ticket
 	/// <returns></returns>
 	[HttpPost("{ticketId}/comment")]
 	[ProducesResponseType<Ticket>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> AddComment([FromRoute] string ticketId, [FromBody] NewTicketNoteModel newTicketNoteModel, CancellationToken cancellationToken)
+	public async Task<ActionResult<Ticket>> AddComment([FromRoute, GuidId(true)] string ticketId, [FromBody, Required] NewTicketNoteModel newTicketNoteModel, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Adding comment to ticket: {ticketId}", ticketId);
 		Ticket ticket;
