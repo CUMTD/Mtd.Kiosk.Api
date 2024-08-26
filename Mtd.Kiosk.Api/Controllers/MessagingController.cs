@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.RealTime;
+using Mtd.Kiosk.RealTime.Entities;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
@@ -43,5 +44,34 @@ public class MessagingController : ControllerBase
 
 		var response = new MessagingResponseModel(result);
 		return Ok(response.GeneralMessages);
+	}
+	/// <summary>
+	/// Get general messages for an LCD display.
+	/// </summary>
+	/// <param name="stopId">The stop id to get general messages for.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>A GeneralMessage object, 204 if no messages.</returns>
+	[HttpGet("/general-messaging/lcd")]
+	[ProducesResponseType<GeneralMessage>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<GeneralMessage>> GetLcdGeneralMessages([FromQuery] string stopId, CancellationToken cancellationToken)
+	{
+		// fetch new general messages from the real-time API.
+		var currentGeneralMessages = await _realTimeClient.GetGeneralMessagesAsync(cancellationToken);
+
+		if (currentGeneralMessages != null && currentGeneralMessages.Length > 0)
+		{
+			var generalMessage = currentGeneralMessages
+				.OrderByDescending(gm => gm.BlockRealtime)
+				.FirstOrDefault(gm => gm.StopIds != null && gm.StopIds.Contains(stopId));
+
+			if (generalMessage != null)
+			{
+				return Ok(generalMessage);
+			}
+		}
+
+		return NoContent();
 	}
 }

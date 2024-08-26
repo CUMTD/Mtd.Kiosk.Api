@@ -104,47 +104,13 @@ public class DeparturesController : ControllerBase
 	/// <param name="stopId">The stop Id to fetch departures for</param>
 	/// <param name="kioskId">The kiosk Id, for logging a heartbeat</param>
 	/// <param name="cancellationToken"></param>
-	/// <returns>An LcdDepartureResponseModel object</returns>
+	/// <returns>An array of LLcdDepartureGroup objects</returns>
 	[HttpGet("{stopId}/lcd")]
 	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IReadOnlyCollection<LcdDepartureGroup>>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
 	{
-		// fetch new general messages from the real-time API.
-		GeneralMessage[]? currentGeneralMessages = null;
-		try
-		{
-			currentGeneralMessages = await _realTimeClient.GetGeneralMessagesAsync(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogWarning(ex, "Failed to get general messages from real-time client.");
-		}
-
-		LcdGeneralMessage? lcdGeneralMessage;
-		if (currentGeneralMessages != null && currentGeneralMessages.Length > 0)
-		{
-
-			var generalMessage = currentGeneralMessages
-				.OrderByDescending(gm => gm.BlockRealtime)
-				.FirstOrDefault(gm => gm.StopIds != null && gm.StopIds.Contains(stopId));
-
-			if (generalMessage != null)
-			{
-				if (generalMessage.BlockRealtime)
-				{
-					return new LcdDepartureResponseModel(new List<LcdDepartureGroup>(), new LcdGeneralMessage(generalMessage));
-
-				}
-				else
-				{
-
-					lcdGeneralMessage = new LcdGeneralMessage(generalMessage);
-				}
-			}
-		}
-
 		var departures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
 		if (departures == null)
 		{
@@ -188,7 +154,7 @@ public class DeparturesController : ControllerBase
 
 			LogHeartbeat(HeartbeatType.LCD, kioskId);
 
-			return new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder), lcdGeneralMessage);
+			return lcdDepartures.OrderBy(d => d.SortOrder).ToArray();
 
 		}
 	}
