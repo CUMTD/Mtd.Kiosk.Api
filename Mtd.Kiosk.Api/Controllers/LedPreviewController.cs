@@ -13,7 +13,11 @@ public class LedPreviewController : ControllerBase
 {
 	private readonly HttpClient _httpClient;
 	private readonly ILogger<LedPreviewController> _logger;
-
+	/// <summary>
+	/// Constructor for LedPreviewController.
+	/// </summary>
+	/// <param name="httpClient"></param>
+	/// <param name="logger"></param>
 	public LedPreviewController(HttpClient httpClient, ILogger<LedPreviewController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(httpClient);
@@ -30,7 +34,7 @@ public class LedPreviewController : ControllerBase
 	/// <param name="cancellationToken">Cancellation token.</param>
 	/// <returns>A PNG image representing the current contents of the LED sign.</returns>
 	[HttpGet("")]
-	[ProducesResponseType<FileContentResult>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]

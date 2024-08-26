@@ -8,6 +8,9 @@ using Mtd.Stopwatch.Core.Repositories.Transit;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
+/// <summary>
+/// A collection of endpoints for fetching departure data for display on kiosks.
+/// </summary>
 [Route("departures")]
 [ApiController]
 public class DeparturesController : ControllerBase
@@ -18,6 +21,14 @@ public class DeparturesController : ControllerBase
 	private readonly IMemoryCache _cache;
 	private readonly ILogger<DeparturesController> _logger;
 
+	/// <summary>
+	/// Constructor for the Departures controller.
+	/// </summary>
+	/// <param name="realTimeClient"></param>
+	/// <param name="heartbeatRepository"></param>
+	/// <param name="routeRepository"></param>
+	/// <param name="cache"></param>
+	/// <param name="logger"></param>
 	public DeparturesController(
 		RealTimeClient realTimeClient,
 		IHeartbeatRepository heartbeatRepository,
@@ -38,6 +49,13 @@ public class DeparturesController : ControllerBase
 		_logger = logger;
 	}
 
+	/// <summary>
+	/// Get the next departures for an LED sign.
+	/// </summary>
+	/// <param name="stopId">The stop Id to fetch departures for</param>
+	/// <param name="kioskId">The kiosk Id, for logging a heartbeat</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>An array of LED departures</returns>
 	[HttpGet("{stopId}/led")]
 	[ProducesResponseType<IEnumerable<LedDeparture>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -64,8 +82,15 @@ public class DeparturesController : ControllerBase
 		return Ok(departures);
 	}
 
+	/// <summary>
+	/// Get the next departures for an LCD screen.
+	/// </summary>
+	/// <param name="stopId">The stop Id to fetch departures for</param>
+	/// <param name="kioskId">The kiosk Id, for logging a heartbeat</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>An LcdDepartureResponseModel object</returns>
 	[HttpGet("{stopId}/lcd")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
@@ -145,7 +170,6 @@ public class DeparturesController : ControllerBase
 
 		}
 	}
-
 	private async Task<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>?> GetCacheAllRoutes(CancellationToken cancellationToken)
 	{
 		const string CACHE_KEY = "GtfsRoutes";

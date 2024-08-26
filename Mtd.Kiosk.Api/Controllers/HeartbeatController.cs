@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Mtd.Kiosk.Api.Models;
-using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
+/// <summary>
+/// A collection of endpoints for interacting with kiosk heartbeat data.
+/// </summary>
+/// <param name="heartbeatRepository"></param>
+/// <param name="logger"></param>
 [Route("heartbeat")]
 [ApiController]
 public class HeartbeatController(IHeartbeatRepository heartbeatRepository, ILogger<HeartbeatController> logger) : ControllerBase
@@ -12,11 +16,17 @@ public class HeartbeatController(IHeartbeatRepository heartbeatRepository, ILogg
 	private readonly IHeartbeatRepository _heartbeatRepository = heartbeatRepository ?? throw new ArgumentNullException(nameof(heartbeatRepository));
 	private readonly ILogger<HeartbeatController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+	/// <summary>
+	/// Adds a new kiosk heartbeat to the database.
+	/// </summary>
+	/// <param name="newHeartbeatModel">The heartbeat to add to the database.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<Ticket>> PostHeartbeat([FromBody] NewHeartbeatModel newHeartbeatModel, CancellationToken cancellationToken)
+	public async Task<ActionResult> PostHeartbeat([FromBody] NewHeartbeatModel newHeartbeatModel, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Recieved heartbeat for kiosk: {KioskId}", newHeartbeatModel.KioskId);
 		var heartbeat = newHeartbeatModel.ToHeartbeat();
