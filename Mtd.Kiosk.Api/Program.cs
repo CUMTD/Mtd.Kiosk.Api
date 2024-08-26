@@ -4,6 +4,13 @@ using Serilog;
 var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Name ?? "Kiosk API";
 var builder = WebApplication.CreateBuilder(args);
 
+// Register the UnobservedTaskException handler
+TaskScheduler.UnobservedTaskException += (sender, e) =>
+{
+	Log.Error(e.Exception, "Unobserved task exception");
+	e.SetObserved(); // Mark exception as handled
+};
+
 try
 {
 	Log.Information("{assemblyName} is being configured.", assemblyName);

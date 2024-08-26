@@ -4,6 +4,7 @@ using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
+using Mtd.Kiosk.RealTime.Entities;
 using Mtd.Stopwatch.Core.Repositories.Transit;
 
 namespace Mtd.Kiosk.Api.Controllers;
@@ -60,24 +61,39 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType<IEnumerable<LedDeparture>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures(string stopId, [FromQuery] string kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
 	{
-		var heartbeat = await _heartbeatRepository.AddAsync(new Heartbeat(kioskId, HeartbeatType.LED), cancellationToken);
-		await _heartbeatRepository.CommitChangesAsync(cancellationToken);
-
-		var result = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
-
-		if (result == null)
+		Departure[]? realTimeClientDepartures;
+		try
 		{
+			realTimeClientDepartures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to get deparutres from real-time client for {stopId}.", stopId);
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
-		var departures = result
-			.OrderBy(x => x.MinutesTillDeparture)
-			.ThenBy(x => x.RouteSortNumber)
-			.GroupBy(x => x.FriendlyRouteName)
-			.Select(x => x.First())
-			.Select(x => new LedDeparture(x));
+		if (realTimeClientDepartures == null)
+		{
+			_logger.LogError("Real-time client returned null for {stopId}.", stopId);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		// the following code takes all departures and does some sorting and filtering.
+		// it also converts the departures to LedDeparture response object.
+		// it groups the departures by route and direction, then selects the first departure for each group.
+		// this avoids using valuable LED real-estate to show an upcoming departure for a route that
+		// already has a bus coming sooner.
+		var departures = realTimeClientDepartures
+			.OrderBy(departure => departure.MinutesTillDeparture)
+			.ThenBy(departure => departure.RouteSortNumber)
+			.GroupBy(departure => new { departure.FriendlyRouteName, departure.Direction })
+			.Select(group => group.First())
+			.Select(departure => new LedDeparture(departure));
+
+		// log the heartbeat. This is done in a "fire and forget" pattern.
+		LogHeartbeat(HeartbeatType.LED, kioskId);
 
 		return Ok(departures);
 	}
@@ -95,20 +111,24 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
 	{
-		if (kioskId != null) // only log heartbeat if kioskId is provided (only kiosks will send this param)
+		// fetch new general messages from the real-time API.
+		GeneralMessage[]? currentGeneralMessages = null;
+		try
 		{
-			var heartbeat = await _heartbeatRepository.AddAsync(new Heartbeat(kioskId, HeartbeatType.LCD), cancellationToken);
-			await _heartbeatRepository.CommitChangesAsync(cancellationToken);
-
+			currentGeneralMessages = await _realTimeClient.GetGeneralMessagesAsync(cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to get general messages from real-time client.");
 		}
 
-		LcdGeneralMessage? lcdGeneralMessage = null;
-
-		var currentGeneralMessages = await _realTimeClient.GetGeneralMessagesAsync(cancellationToken);
+		LcdGeneralMessage? lcdGeneralMessage;
 		if (currentGeneralMessages != null && currentGeneralMessages.Length > 0)
 		{
 
-			var generalMessage = currentGeneralMessages.FirstOrDefault(x => x.StopIds != null && x.StopIds.Contains(stopId));
+			var generalMessage = currentGeneralMessages
+				.OrderByDescending(gm => gm.BlockRealtime)
+				.FirstOrDefault(gm => gm.StopIds != null && gm.StopIds.Contains(stopId));
 
 			if (generalMessage != null)
 			{
@@ -166,10 +186,15 @@ public class DeparturesController : ControllerBase
 				lcdDepartures.Add(lcdDeparture);
 			}
 
+			LogHeartbeat(HeartbeatType.LCD, kioskId);
+
 			return new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder), lcdGeneralMessage);
 
 		}
 	}
+
+	#region Helpers
+
 	private async Task<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>?> GetCacheAllRoutes(CancellationToken cancellationToken)
 	{
 		const string CACHE_KEY = "GtfsRoutes";
@@ -191,4 +216,48 @@ public class DeparturesController : ControllerBase
 
 		return publicRoutes;
 	}
+
+	/// <summary>
+	/// Logs the kiosk heartbeat using a "fire and forget" pattern.
+	/// </summary>
+	/// <param name="type">The type of component to log a heartbeat for.</param>
+	/// <param name="kioskId">The ID of the kiosk to log. If this is null, this method will not do anything.</param>
+	private void LogHeartbeat(HeartbeatType type, string? kioskId)
+	{
+		if (string.IsNullOrWhiteSpace(kioskId))
+		{
+			_logger.LogDebug("No Kiosk ID provided, not logging heartbeat of type {heartbeatType}", type);
+			return;
+		}
+
+		var heartbeat = new Heartbeat(kioskId, type);
+		try
+		{
+			_ = _heartbeatRepository
+				.AddAsync(heartbeat, CancellationToken.None)
+				.ContinueWith(task =>
+				{
+					if (task.Exception != null)
+					{
+						_logger.LogWarning(task.Exception, "Failed to add heartbeat {heartbeatType} for kiosk {kioskId}", type, kioskId ?? "unknown");
+					}
+				}, TaskContinuationOptions.OnlyOnFaulted);
+
+			_ = _heartbeatRepository.CommitChangesAsync(CancellationToken.None)
+				.ContinueWith(task =>
+				{
+					if (task.Exception != null)
+					{
+						_logger.LogWarning(task.Exception, "Failed to commit heartbeat {heartbeatType} for kiosk {kioskId}", type, kioskId ?? "unknown");
+					}
+				}, TaskContinuationOptions.OnlyOnFaulted);
+		}
+		catch (Exception ex)
+		{
+			// Handle or log unexpected synchronous exceptions
+			_logger.LogError(ex, "Unexpected exception while logging heartbeat.");
+		}
+	}
+
+	#endregion Helpers
 }
