@@ -146,7 +146,7 @@ public class KioskController : ControllerBase
 	/// <summary>
 	/// Get the health status of a single kiosk.
 	/// </summary>
-	/// <param name="kioskId">The id of the kiosk to ge the status for.</param>
+	/// <param name="kioskId">The id of the kiosk to get the status for.</param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	[HttpGet("{kioskId}/health")]
