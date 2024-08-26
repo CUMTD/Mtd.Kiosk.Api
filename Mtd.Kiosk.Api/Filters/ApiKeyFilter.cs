@@ -8,12 +8,20 @@ namespace Mtd.Kiosk.Api.Filters;
 internal class ApiKeyFilter : IAuthorizationFilter
 {
 	private readonly ILogger<ApiKeyFilter> _logger;
-	private readonly IOptions<ApiAuthentication> _keys;
+	private readonly string[] _keys;
 
-	public ApiKeyFilter(ILogger<ApiKeyFilter> logger, IOptions<ApiAuthentication> keys)
+	public ApiKeyFilter(IOptions<ApiAuthentication> authenticationOptions, ILogger<ApiKeyFilter> logger)
 	{
+		ArgumentNullException.ThrowIfNull(authenticationOptions?.Value?.ApiKeys, nameof(authenticationOptions));
+		if (authenticationOptions.Value.ApiKeys.Length == 0)
+		{
+			throw new ArgumentException("No API keys provided.", nameof(authenticationOptions));
+		}
+
+		ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
 		_logger = logger;
-		_keys = keys;
+		_keys = authenticationOptions.Value.ApiKeys;
 	}
 
 	public void OnAuthorization(AuthorizationFilterContext context)
@@ -36,7 +44,7 @@ internal class ApiKeyFilter : IAuthorizationFilter
 			_logger.LogInformation("No API key provided.");
 		}
 
-		if (_keys.Value.ApiKeys.Any(k => string.Equals(k, keyFromRequest, StringComparison.OrdinalIgnoreCase)))
+		if (_keys.Any(k => string.Equals(k, keyFromRequest, StringComparison.Ordinal)))
 		{
 			_logger.LogTrace("Good API key.");
 			return;
