@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Mtd.Kiosk.Api.Config;
+using Mtd.Kiosk.Api.Models;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
+/// <summary>
+/// A collection of endpoints for interacting and modifying kiosk data.
+/// </summary>
 [Route("kiosks")]
 [ApiController]
 public class KioskController : ControllerBase
@@ -16,6 +20,15 @@ public class KioskController : ControllerBase
 	private readonly ILogger<KioskController> _logger;
 	private readonly ApiConfiguration _apiConfiguration;
 
+	/// <summary>
+	/// Constructor for the Kiosk controller.
+	/// </summary>
+	/// <param name="kioskRepository"></param>
+	/// <param name="heartbeatRepository"></param>
+	/// <param name="ticketRepository"></param>
+	/// <param name="logger"></param>
+	/// <param name="apiConfiguration"></param>
+	/// <exception cref="ArgumentNullException"></exception>
 	public KioskController(IKioskRepository kioskRepository, IHeartbeatRepository heartbeatRepository, ITicketRepository ticketRepository, ILogger<KioskController> logger, IOptions<ApiConfiguration> apiConfiguration)
 	{
 
@@ -26,8 +39,14 @@ public class KioskController : ControllerBase
 		_apiConfiguration = apiConfiguration.Value ?? throw new ArgumentNullException(nameof(apiConfiguration));
 	}
 
+	/// <summary>
+	/// Get a kiosk by its id.
+	/// </summary>
+	/// <param name="kioskId">The kiosk id to get.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>A Kiosk object</returns>
 	[HttpGet("{kioskId}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<Core.Entities.Kiosk>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<Core.Entities.Kiosk>> GetKiosk(string kioskId, CancellationToken cancellationToken)
@@ -52,10 +71,15 @@ public class KioskController : ControllerBase
 		return Ok(kiosk);
 	}
 
+	/// <summary>
+	/// Get all kiosks.
+	/// </summary>
+	/// <param name="cancellationToken"></param>
+	/// <returns>An array of all kiosks.</returns>
 	[HttpGet("")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<IEnumerable<Core.Entities.Kiosk>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<Ticket>>> GetAllKiosks(CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<Core.Entities.Kiosk>>> GetAllKiosks(CancellationToken cancellationToken)
 	{
 		IReadOnlyCollection<Core.Entities.Kiosk> kiosks;
 		try
@@ -72,8 +96,14 @@ public class KioskController : ControllerBase
 		return Ok(kiosks);
 	}
 
+	/// <summary>
+	/// Create a new kiosk.
+	/// </summary>
+	/// <param name="kiosk">The kiosk Object to add.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>The kiosk, if successfully added.</returns>
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status201Created)]
+	[ProducesResponseType<Core.Entities.Kiosk>(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<Core.Entities.Kiosk>> CreateKiosk(Core.Entities.Kiosk kiosk, CancellationToken cancellationToken)
 	{
@@ -91,10 +121,17 @@ public class KioskController : ControllerBase
 		return CreatedAtAction(nameof(GetKiosk), new { KioskId = kiosk.Id }, kiosk);
 	}
 
+	// TODO: make an object for this
+
+	/// <summary>
+	/// Get all kiosk health statuses.
+	/// </summary>
+	/// <param name="cancellationToken"></param>
+	/// <returns>An array of KioskHealthResponseModel objects</returns>
 	[HttpGet("health")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<IEnumerable<KioskHealthResponseModel>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> GetAllKioskHealth(CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<KioskHealthResponseModel>>> GetAllKioskHealth(CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Getting all kiosk health");
 		// get all kiosks, then get health for each kiosk, then return json object with health status of each kiosk
@@ -106,10 +143,16 @@ public class KioskController : ControllerBase
 
 	}
 
+	/// <summary>
+	/// Get the health status of a single kiosk.
+	/// </summary>
+	/// <param name="kioskId">The id of the kiosk to ge the status for.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
 	[HttpGet("{kioskId}/health")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<KioskHealthResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> GetKioskHealth(string kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<KioskHealthResponseModel>> GetKioskHealth(string kioskId, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -122,8 +165,14 @@ public class KioskController : ControllerBase
 		}
 	}
 
+	/// <summary>
+	/// Get the health status of a kiosk.
+	/// </summary>
+	/// <param name="kioskId">The kiosk id to fetch the health for.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>A KioskHealthResponseModel object.</returns>
 	[NonAction]
-	public async Task<object> KioskHealth(string kioskId, CancellationToken cancellationToken)
+	public async Task<KioskHealthResponseModel> KioskHealth(string kioskId, CancellationToken cancellationToken)
 	{
 		_logger.LogTrace("Getting health for kiosk: {kioskId}", kioskId);
 
@@ -134,19 +183,10 @@ public class KioskController : ControllerBase
 		var openTicketCount = await _ticketRepository.GetOpenTicketCountAsync(kioskId, cancellationToken);
 
 		// return json object with health status of each component
-		return new
-		{
-			// return max health status of all components
-			kioskId = kioskId,
-			overallHealth = new[] { buttonHealth, ledHealth, lcdHealth }.Max(),
-			healthStatuses = new
-			{
-				button = buttonHealth,
-				led = ledHealth,
-				lcd = lcdHealth
-			},
-			openTicketCount = openTicketCount
-		};
+		var overallHealth = new[] { buttonHealth, ledHealth, lcdHealth }.Max();
+		var healthStatuses = new IndividualHealthStatuses(buttonHealth, ledHealth, lcdHealth);
+
+		return new KioskHealthResponseModel(kioskId, overallHealth, healthStatuses, openTicketCount);
 	}
 
 	// calculate health for each possible HeartbeatType
@@ -193,8 +233,14 @@ public class KioskController : ControllerBase
 		return HealthStatus.Healthy;
 	}
 
+	/// <summary>
+	/// Get tickets for a kiosk id.
+	/// </summary>
+	/// <param name="KioskId">The kiosk id to fetc htickets for.</param>
+	/// <param name="cancellationToken"></param>
+	/// <returns>An array of Ticket objects.</returns>
 	[HttpGet("{kioskId}/tickets")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType<IEnumerable<Ticket>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<Ticket>>> GetTicketsByKiosk(string KioskId, CancellationToken cancellationToken)
 	{
