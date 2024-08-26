@@ -2,7 +2,7 @@
 
 namespace Mtd.Kiosk.Api.Extensions;
 
-public static class WebApplicationExtensions
+internal static class WebApplicationExtensions
 {
 	public static WebApplication ConfigureApp(this WebApplication app)
 	{
