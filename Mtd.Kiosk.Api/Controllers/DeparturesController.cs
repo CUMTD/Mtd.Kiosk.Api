@@ -63,6 +63,9 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
 	{
+		// log the heartbeat. This is done in a "fire and forget" pattern.
+		LogHeartbeat(HeartbeatType.LED, kioskId);
+
 		Departure[]? realTimeClientDepartures;
 		try
 		{
@@ -92,9 +95,6 @@ public class DeparturesController : ControllerBase
 			.Select(group => group.First())
 			.Select(departure => new LedDeparture(departure));
 
-		// log the heartbeat. This is done in a "fire and forget" pattern.
-		LogHeartbeat(HeartbeatType.LED, kioskId);
-
 		return Ok(departures);
 	}
 
@@ -103,60 +103,76 @@ public class DeparturesController : ControllerBase
 	/// </summary>
 	/// <param name="stopId">The stop Id to fetch departures for</param>
 	/// <param name="kioskId">The kiosk Id, for logging a heartbeat</param>
+	/// <param name="max">The maximum number of route groups to return</param>
 	/// <param name="cancellationToken"></param>
 	/// <returns>An array of LLcdDepartureGroup objects</returns>
 	[HttpGet("{stopId}/lcd")]
 	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IReadOnlyCollection<LcdDepartureGroup>>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(string stopId, [FromQuery] string? kioskId, CancellationToken cancellationToken, [FromQuery] int max = 7)
 	{
-		var departures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
-		if (departures == null)
+		// log the heartbeat. This is done in a "fire and forget" pattern.
+		LogHeartbeat(HeartbeatType.LCD, kioskId);
+
+		// fetch from API
+		Departure[]? departures = null;
+		try
 		{
+			departures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to get deparutres from real-time client for {stopId}.", stopId);
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
-		else
-		{
-			var routes = await GetCacheAllRoutes(cancellationToken);
-			if (routes == null)
-			{
-				_logger.LogError("Could not load GTFS routes from DB so cannot show departures.");
-				return StatusCode(StatusCodes.Status500InternalServerError);
-			}
 
-			var groupedDepartures = departures
+		// ensure API returned data.
+		if (departures == null)
+		{
+			_logger.LogWarning("Real-time client returned null for {stopId}.", stopId);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		// get all routes from the database
+		// these will be used to enhance the response with route names and colors.
+		var routes = await GetCacheAllRoutes(cancellationToken);
+		if (routes == null)
+		{
+			_logger.LogError("Could not load GTFS routes from DB so cannot show departures.");
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		// group departures by public route ID
+		var groupedDepartures = departures
+			.GroupBy(departure => routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID")
+			.Take(max); // TODO: Let's talk about this.
+
+		// convert to LCD departure response model
+		var lcdDepartures = new List<LcdDepartureGroup>();
+		foreach (var group in groupedDepartures)
+		{
+			// get the next 3 departures for each route
+			// and convert to response model
+			var lcdDepartureTimes = group
 				.OrderBy(departure => departure.MinutesTillDeparture)
 				.ThenBy(departure => departure.RouteSortNumber)
 				.ThenBy(departure => departure.RouteNumber)
-				.ToLookup(departure => routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID")
-				.Take(7)
-				.OrderBy(d => d.First().RouteNumber);
+				.Take(3)
+				.Select(d => new LcdDepartureTime(d));
 
-			var lcdDepartures = new List<LcdDepartureGroup>();
+			// match the public route for this group.
+			var publicRoute = routes
+				.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key)
+				.PublicRoute;
 
-			foreach (var group in groupedDepartures)
-			{
-				var lcdDepartureTimes = new List<LcdDepartureTime>();
+			// public route should never be null here since we check for it in our first statement above.
+			var lcdDeparture = new LcdDepartureGroup(publicRoute!, lcdDepartureTimes, group.First().Direction);
 
-				for (var i = 0; i < 3 && i < group.Count(); i++)
-				{
-					lcdDepartureTimes.Add(new LcdDepartureTime(group.ElementAt(i)));
-				}
-
-				var publicRoute = routes.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key).PublicRoute;
-
-				// public route should never be null here since we check for it in our first statement above.
-				var lcdDeparture = new LcdDepartureGroup(publicRoute!, lcdDepartureTimes, group.First().Direction);
-
-				lcdDepartures.Add(lcdDeparture);
-			}
-
-			LogHeartbeat(HeartbeatType.LCD, kioskId);
-
-			return lcdDepartures.OrderBy(d => d.SortOrder).ToArray();
-
+			lcdDepartures.Add(lcdDeparture);
 		}
+
+		return new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder));
 	}
 
 	#region Helpers

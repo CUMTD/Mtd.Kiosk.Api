@@ -12,7 +12,7 @@ namespace Mtd.Kiosk.Api.Models;
 /// <param name="publicRoute">The public route from the database that is associated with this departure.</param>
 /// <param name="lcdDepartures">All upcoming departure times for this route.</param>
 /// <param name="direction">The direction associated with these trips.</param>
-public class LcdDepartureGroup(PublicRoute publicRoute, List<LcdDepartureTime> lcdDepartures, string direction)
+public class LcdDepartureGroup(PublicRoute publicRoute, IEnumerable<LcdDepartureTime> lcdDepartures, string direction)
 {
 	/// <summary>
 	/// The route number.
@@ -53,5 +53,5 @@ public class LcdDepartureGroup(PublicRoute publicRoute, List<LcdDepartureTime> l
 	/// The departure times for the route.
 	/// </summary>
 	[JsonPropertyName("departureTimes")]
-	public List<LcdDepartureTime> DepartureTimes { get; set; } = lcdDepartures;
+	public IEnumerable<LcdDepartureTime> DepartureTimes { get; set; } = lcdDepartures;
 }
