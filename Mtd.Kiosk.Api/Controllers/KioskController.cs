@@ -12,8 +12,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// <summary>
 /// A collection of endpoints for interacting and modifying kiosk data.
 /// </summary>
-[Route("kiosks")]
 [ApiController]
+[Produces("application/json")]
+[Route("kiosks")]
 public class KioskController : ControllerBase
 {
 	private readonly IKioskRepository _kioskRepository;
@@ -38,7 +39,7 @@ public class KioskController : ControllerBase
 		ArgumentNullException.ThrowIfNull(ticketRepository);
 		ArgumentNullException.ThrowIfNull(kioskRepository);
 		ArgumentNullException.ThrowIfNull(logger);
-		ArgumentNullException.ThrowIfNull(_apiConfiguration);
+		ArgumentNullException.ThrowIfNull(apiConfiguration);
 
 		_kioskRepository = kioskRepository;
 		_heartbeatRepository = heartbeatRepository;
@@ -240,7 +241,7 @@ public class KioskController : ControllerBase
 			return HealthStatus.Unknown;
 		}
 
-		return lastHeartbeat.GetHealthStatusForTime(DateTimeOffset.UtcNow, _apiConfiguration.WarningHeartbeatThresholdMinutes, _apiConfiguration.CriticalHeartbeatThresholdMinutes);
+		return lastHeartbeat.GetHealthStatusForTime(DateTime.UtcNow, _apiConfiguration.WarningHeartbeatThresholdMinutes, _apiConfiguration.CriticalHeartbeatThresholdMinutes);
 	}
 
 	/// <summary>
