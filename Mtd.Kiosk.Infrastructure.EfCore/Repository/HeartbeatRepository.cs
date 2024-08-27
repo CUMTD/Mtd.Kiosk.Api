@@ -18,4 +18,9 @@ public class HeartbeatRepository(KioskContext context) : AsyncEFIdentifiableRepo
 		return heartbeats.ToImmutableArray();
 
 	}
+
+	public Task<Heartbeat?> GetMostRecentHeartbeatOfTypeOrDefaultAsync(string identity, HeartbeatType heartbeatType, CancellationToken cancellationToken) => _dbSet
+		.Where(h => h.KioskId == identity && h.Type == heartbeatType)
+		.OrderByDescending(h => h.Timestamp)
+		.FirstOrDefaultAsync(cancellationToken);
 }

@@ -23,7 +23,7 @@ public class TicketRepository(KioskContext context) : AsyncEFIdentifiableReposit
 	{
 		var kiosk = await _dbSet
 			.Where(t => t.KioskId == kioskId)
-			.Include(t => t.TicketNotes.Where(tn => !tn.Deleted).OrderByDescending(tn => tn.CreatedDate))
+			.Include(t => t.Notes.Where(tn => !tn.Deleted).OrderByDescending(tn => tn.CreatedDate))
 			.ToArrayAsync(cancellationToken);
 
 		return kiosk.ToImmutableArray();

@@ -17,7 +17,7 @@ public class KioskRepository(KioskContext context) : AsyncEFIdentifiableReposito
 	{
 		if (includeTickets)
 		{
-			var kiosks = await _dbSet.Include(k => k.Tickets).ThenInclude(t => t.TicketNotes).ToArrayAsync(cancellationToken);
+			var kiosks = await _dbSet.Include(k => k.Tickets).ThenInclude(t => t.Notes).ToArrayAsync(cancellationToken);
 
 			return kiosks.ToImmutableArray();
 		}

@@ -33,5 +33,10 @@ internal class TicketNoteConfiguration : IEntityTypeConfiguration<TicketNote>
 			.HasDefaultValue(false)
 			.IsRequired();
 
+		_ = builder
+			.HasOne(note => note.Ticket)
+			.WithMany(ticket => ticket.Notes)
+			.HasForeignKey(note => note.TicketId);
+
 	}
 }

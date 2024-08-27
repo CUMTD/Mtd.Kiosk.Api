@@ -1,30 +1,35 @@
 ﻿using Mtd.Core.Entities;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Mtd.Kiosk.Core.Entities;
 
 public class TicketNote : GuidEntity, IEntity
 {
 	public string? MarkdownBody { get; set; }
-	public required string TicketId { get; set; }
-	public required DateTime CreatedDate { get; set; }
-	public required string CreatedBy { get; set; }
+	public string TicketId { get; set; }
+	public DateTime CreatedDate { get; set; }
+	public string CreatedBy { get; set; }
+	public bool Deleted { get; set; }
 
-	public required bool Deleted { get; set; }
+	[JsonIgnore]
+	public virtual Ticket Ticket { get; set; }
 
 	[SetsRequiredMembers]
-	public TicketNote() : base()
+	protected TicketNote() : base()
 	{
+		TicketId = string.Empty;
 		CreatedDate = DateTime.Now;
+		CreatedBy = string.Empty;
 		Deleted = false;
+		Ticket = new Ticket();
 	}
 
 	[SetsRequiredMembers]
-	public TicketNote(string ticketId, string markdownBody, string createdBy) : this()
+	public TicketNote(string ticketId, string createdBy, string? markdownBody) : this()
 	{
 		TicketId = ticketId;
-		MarkdownBody = markdownBody;
 		CreatedBy = createdBy;
-
+		MarkdownBody = markdownBody;
 	}
 }

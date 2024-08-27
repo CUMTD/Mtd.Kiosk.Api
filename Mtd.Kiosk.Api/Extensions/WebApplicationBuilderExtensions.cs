@@ -17,12 +17,15 @@ using Mtd.Stopwatch.Infrastructure.EFCore.Repositories.Transit;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Timeout;
+using Polly.Wrap;
 using Serilog;
+using System.Reflection;
 
 namespace Mtd.Kiosk.Api.Extensions;
 
 internal static class WebApplicationBuilderExtensions
 {
+
 	public static WebApplicationBuilder Configure(this WebApplicationBuilder builder) => builder
 		.AddConfiguration()
 		.ConfigureLogging()
@@ -38,17 +41,11 @@ internal static class WebApplicationBuilderExtensions
 			_ = builder.Configuration.AddUserSecrets<Program>();
 		}
 
-		builder.Configuration.AddEnvironmentVariables("Kiosk_");
+		_ = builder.Configuration.AddEnvironmentVariables("Kiosk_");
 
 		_ = builder.Services.AddOptions<ApiAuthentication>()
-		.Bind(builder.Configuration.GetSection(nameof(ApiAuthentication)))
-		.ValidateDataAnnotations();
-
-		var config = builder.Configuration.Get<ConnectionStrings>();
-		if (config != default)
-		{
-			_ = builder.Services.AddSingleton(config);
-		}
+			.Bind(builder.Configuration.GetSection(nameof(ApiAuthentication)))
+			.ValidateDataAnnotations();
 
 		_ = builder.Services
 			.AddOptions<ConnectionStrings>()
@@ -68,65 +65,28 @@ internal static class WebApplicationBuilderExtensions
 			.ValidateDataAnnotations()
 			.ValidateOnStart();
 
-		_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
-		{
-			var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.KioskConnection;
-			options.UseSqlServer(connectionString);
-			// options.UseLazyLoadingProxies();
-		});
-
-		_ = builder.Services.AddDbContextPool<StopwatchContext>((sp, options) =>
-		{
-			var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.StopwatchConnection;
-			options.UseSqlServer(connectionString);
-			// options.UseLazyLoadingProxies();
-		});
-
-		_ = builder.Services.AddScoped<IPublicRouteRepository<IReadOnlyCollection<PublicRoute>>, PublicRouteRepository>();
-		_ = builder.Services.AddScoped<IPublicRouteGroupRepository<IReadOnlyCollection<PublicRouteGroup>>, PublicRouteGroupRepository>();
-		_ = builder.Services.AddScoped<IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>>, RouteRepository>();
-
-		return builder;
-	}
-	private static WebApplicationBuilder ConfigureHTTPClient(this WebApplicationBuilder builder)
-	{
-		var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
-
-		var retryPolicy = HttpPolicyExtensions
-			.HandleTransientHttpError()
-			.Or<TimeoutRejectedException>()
-			.WaitAndRetryAsync(2, count => TimeSpan.FromMilliseconds(500 * Math.Pow(count, 2))); // 500, then 2000
-
-		var shortCircuitPolicy = HttpPolicyExtensions
-			.HandleTransientHttpError()
-			.Or<TimeoutRejectedException>()
-			.AdvancedCircuitBreakerAsync(0.75, TimeSpan.FromSeconds(60), 4, TimeSpan.FromSeconds(120));
-
-		var defaultPolicy = Policy.WrapAsync(timeoutPolicy, retryPolicy, shortCircuitPolicy);
-
-		builder.Services.AddHttpClient<RealTimeClient>().AddPolicyHandler(defaultPolicy);
 		return builder;
 	}
 	private static WebApplicationBuilder ConfigureLogging(this WebApplicationBuilder builder)
 	{
-		builder.Services.AddSerilog();
-
-		_ = builder
-			.Host
-			.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+		_ = builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 		return builder;
 	}
 	private static WebApplicationBuilder ConfigureApi(this WebApplicationBuilder builder)
 	{
+		var corsPolicyName = builder.Configuration["Cors:PolicyName"] ?? throw new InvalidOperationException("Cors:PolicyName not defined");
+		var corsAllowedOrigin = builder.Configuration["Cors:AllowedOrigins"] ?? throw new InvalidOperationException("Cors:AllowedOrigins not defined");
+
 		_ = builder.Services.AddControllers();
 
 		_ = builder.Services.AddCors(options => options.AddPolicy(
-			"AllowDashboard",
-			policy => policy.WithOrigins("https://localhost:3000")
-			.WithOrigins("http://localhost:3000")
+			corsPolicyName,
+			policy => policy
+			.WithOrigins(corsAllowedOrigin)
 			.AllowAnyHeader()
-			.AllowAnyMethod()));
+			.AllowAnyMethod()
+		));
 
 		_ = builder.Services.AddEndpointsApiExplorer();
 
@@ -163,6 +123,10 @@ internal static class WebApplicationBuilderExtensions
 				{ securityScheme, Array.Empty <string>() }
 			  });
 
+			var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+			var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+			options.IncludeXmlComments(xmlPath);
+
 		});
 		_ = builder.Services.AddControllers(options => options.Filters.Add<ApiKeyFilter>());
 
@@ -170,22 +134,28 @@ internal static class WebApplicationBuilderExtensions
 	}
 	private static WebApplicationBuilder ConfigureDB(this WebApplicationBuilder builder)
 	{
-		/*var conectionString = builder.Configuration.GetConnectionString("StopwatchConnection");
-		if (string.IsNullOrWhiteSpace(conectionString))
+		_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 		{
-			throw new InvalidOperationException("StopwatchConnection is not configured in user secrets");
-		}
-
-		_ = builder.Services.AddDbContextPool<StopwatchContext>((serviceProvider, options) =>
-		{
+			var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.KioskConnection;
+			options.UseSqlServer(connectionString);
 			options.UseLazyLoadingProxies();
-			options.UseSqlServer(conectionString);
-		});*/
+		});
+
+		_ = builder.Services.AddDbContextPool<StopwatchContext>((sp, options) =>
+		{
+			var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.StopwatchConnection;
+			options.UseSqlServer(connectionString);
+			options.UseLazyLoadingProxies();
+		});
 
 		return builder;
 	}
 	private static WebApplicationBuilder ConfigureDI(this WebApplicationBuilder builder)
 	{
+		_ = builder.Services.AddScoped<IPublicRouteRepository<IReadOnlyCollection<PublicRoute>>, PublicRouteRepository>();
+		_ = builder.Services.AddScoped<IPublicRouteGroupRepository<IReadOnlyCollection<PublicRouteGroup>>, PublicRouteGroupRepository>();
+		_ = builder.Services.AddScoped<IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>>, RouteRepository>();
+
 		_ = builder.Services.AddScoped<IKioskRepository, KioskRepository>();
 		_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
 		_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
@@ -194,5 +164,56 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddMemoryCache();
 
 		return builder;
+	}
+	private static WebApplicationBuilder ConfigureHTTPClient(this WebApplicationBuilder builder)
+	{
+		// Use AddHttpClient with a typed client and DI to inject logger
+		builder.Services.AddHttpClient<RealTimeClient>()
+			.AddPolicyHandler((serviceProvider, request) =>
+			{
+				// Resolve the logger from the service provider
+				var logger = serviceProvider.GetRequiredService<ILogger<WebApplication>>();
+
+				// Get the default policy with logging
+				return GetDefaultPolicy(logger);
+			});
+
+		return builder;
+	}
+	private static AsyncPolicyWrap<HttpResponseMessage> GetDefaultPolicy(ILogger<WebApplication> logger)
+	{
+		var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(5));
+
+		var retryPolicy = HttpPolicyExtensions
+			.HandleTransientHttpError()
+			.Or<TimeoutRejectedException>()
+			.WaitAndRetryAsync(
+				2,
+				count => TimeSpan.FromMilliseconds(500 * Math.Pow(count, 2)), // 500, then 2000
+				(outcome, timespan, retryAttempt, context) => logger.LogWarning(outcome.Exception, "Retry attempt {RetryAttempt} after {Delay}ms due to {Exception}.", retryAttempt, timespan.TotalMilliseconds, outcome.Exception?.Message));
+
+		var circuitBreakerPolicy = HttpPolicyExtensions
+			.HandleTransientHttpError()
+			.Or<TimeoutRejectedException>()
+			.AdvancedCircuitBreakerAsync(
+				0.75,
+				TimeSpan.FromSeconds(60),
+				4,
+				TimeSpan.FromSeconds(120),
+				onBreak: (outcome, timespan) =>
+				{
+					logger.LogWarning("Circuit breaker opened for {Duration}ms due to {Exception}.", timespan.TotalMilliseconds, outcome.Exception?.Message);
+				},
+				onReset: () =>
+				{
+					logger.LogInformation("Circuit breaker reset.");
+				},
+				onHalfOpen: () =>
+				{
+					logger.LogInformation("Circuit breaker is half-open. Testing state.");
+				});
+
+		// Combine policies into a single policy
+		return Policy.WrapAsync(timeoutPolicy, retryPolicy, circuitBreakerPolicy);
 	}
 }

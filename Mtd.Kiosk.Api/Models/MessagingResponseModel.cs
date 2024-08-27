@@ -2,10 +2,20 @@
 
 namespace Mtd.Kiosk.Api.Models;
 
+/// <summary>
+/// Model for the response to the general messaging endpoint.
+/// </summary>
 public class MessagingResponseModel
 {
+	/// <summary>
+	/// The array of general messages.
+	/// </summary>
 	public IReadOnlyCollection<SimpleGeneralMessage> GeneralMessages { get; set; }
 
+	/// <summary>
+	/// Contructor that augments a GeneralMessage array to a MessagingResponseModel.
+	/// </summary>
+	/// <param name="messageResult"></param>
 	public MessagingResponseModel(GeneralMessage[] messageResult)
 	{
 		var generalMessages = new List<SimpleGeneralMessage>();
@@ -24,19 +34,3 @@ public class MessagingResponseModel
 		GeneralMessages = generalMessages;
 	}
 }
-
-public class SimpleGeneralMessage
-{
-	public string StopId { get; set; }
-	public string Message { get; set; }
-
-	public bool BlockRealtime { get; set; }
-
-	public SimpleGeneralMessage(string stopId, string message, bool blockRealtime)
-	{
-		StopId = stopId;
-		Message = message;
-		BlockRealtime = blockRealtime;
-	}
-}
-

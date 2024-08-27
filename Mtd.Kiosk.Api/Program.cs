@@ -1,44 +1,38 @@
 using Mtd.Kiosk.Api.Extensions;
+using Serilog;
 
+var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName()?.Name ?? "Kiosk API";
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configure();
-
-var app = builder.Build();
-
-if (app.Environment.IsProduction())
+// Register the UnobservedTaskException handler
+TaskScheduler.UnobservedTaskException += (sender, e) =>
 {
-	_ = app.UseHsts();
+	Log.Error(e.Exception, "Unobserved task exception");
+	e.SetObserved(); // Mark exception as handled
+};
+
+try
+{
+	Log.Information("{assemblyName} is being configured.", assemblyName);
+
+	// Configure the rest of the services and middleware
+	builder.Configure();
+
+	var app = builder
+		.Build()
+		.ConfigureApp();
+
+	Log.Information("{assemblyName} is starting up.", assemblyName);
+
+	await app.RunAsync();
 }
-
-_ = app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+catch (Exception ex)
 {
-	options.RoutePrefix = string.Empty;
-	options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
-	options.DocumentTitle = "Kiosk API";
-
-	options.DisplayRequestDuration();
-
-	options.InjectStylesheet("/css/swagger-ui.css");
-
-	options
-		.SwaggerEndpoint(
-			$"/swagger/v1.0/swagger.json",
-			$"Kiosk API - v1.0".Trim()
-		);
-});
-
-app.UseRouting();
-
-app.UseCors("AllowDashboard");
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-await app.RunAsync();
+	Log.Fatal(ex, "{assemblyName} failed to start correctly.", assemblyName);
+	throw; // Rethrow to let the process know it has crashed
+}
+finally
+{
+	Log.Information("{assemblyName} has stopped.", assemblyName);
+	Log.CloseAndFlush(); // Ensure to flush and close the log
+}
