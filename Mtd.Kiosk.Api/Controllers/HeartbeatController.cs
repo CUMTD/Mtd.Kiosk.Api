@@ -10,8 +10,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// </summary>
 /// <param name="heartbeatRepository"></param>
 /// <param name="logger"></param>
-[Route("heartbeat")]
 [ApiController]
+[Produces("application/json")]
+[Route("heartbeat")]
 public class HeartbeatController(IHeartbeatRepository heartbeatRepository, ILogger<HeartbeatController> logger) : ControllerBase
 {
 	private readonly IHeartbeatRepository _heartbeatRepository = heartbeatRepository ?? throw new ArgumentNullException(nameof(heartbeatRepository));

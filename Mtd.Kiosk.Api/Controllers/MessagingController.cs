@@ -9,6 +9,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// <summary>
 /// Controller for messaging.
 /// </summary>
+[ApiController]
+[Produces("application/json")]
+[Route("general-messaging")]
 public class MessagingController : ControllerBase
 {
 	private readonly RealTimeClient _realTimeClient;
@@ -32,7 +35,7 @@ public class MessagingController : ControllerBase
 	/// </summary>
 	/// <param name="cancellationToken"></param>
 	/// <returns>Currently active general messages</returns>
-	[HttpGet("/general-messaging")]
+	[HttpGet]
 	[ProducesResponseType<IEnumerable<SimpleGeneralMessage>>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<SimpleGeneralMessage>>> GetGeneralMessages(CancellationToken cancellationToken)
@@ -63,7 +66,7 @@ public class MessagingController : ControllerBase
 	/// <param name="stopId">The stop id to get general messages for.</param>
 	/// <param name="cancellationToken"></param>
 	/// <returns>A GeneralMessage object, 204 if no messages.</returns>
-	[HttpGet("/general-messaging/lcd")]
+	[HttpGet("lcd")]
 	[ProducesResponseType<GeneralMessage>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]

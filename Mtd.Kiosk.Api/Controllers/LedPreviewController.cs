@@ -8,8 +8,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// <summary>
 /// API methods related to previewing the content of LED signs.
 /// </summary>
-[Route("led-preview")]
 [ApiController]
+[Produces("application/json")]
+[Route("led-preview")]
 public class LedPreviewController : ControllerBase
 {
 	private readonly HttpClient _httpClient;

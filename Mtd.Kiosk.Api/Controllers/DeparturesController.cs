@@ -14,8 +14,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// <summary>
 /// A collection of endpoints for fetching departure data for display on kiosks.
 /// </summary>
-[Route("departures")]
 [ApiController]
+[Produces("application/json")]
+[Route("departures")]
 public class DeparturesController : ControllerBase
 {
 	private readonly RealTimeClient _realTimeClient;

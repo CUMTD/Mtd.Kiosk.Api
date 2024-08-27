@@ -12,8 +12,9 @@ namespace Mtd.Kiosk.Api.Controllers;
 /// <summary>
 /// Controller for ticket notes.
 /// </summary>
-[Route("ticket-notes")]
 [ApiController]
+[Produces("application/json")]
+[Route("ticket-notes")]
 public class TicketNoteController : ControllerBase
 {
 	private readonly ITicketNoteRepository _ticketNoteRepository;
