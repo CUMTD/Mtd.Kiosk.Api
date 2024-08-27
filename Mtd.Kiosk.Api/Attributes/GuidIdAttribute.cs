@@ -12,7 +12,8 @@ namespace Mtd.Kiosk.Api.Attributes;
 [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 public class GuidIdAttribute(bool required) : ValidationAttribute
 {
-	private static readonly Regex _kioskIdRegex = new("^[0-9a-z]{32}$", RegexOptions.Compiled);
+	private static readonly Regex _kioskIdRegex = new Regex("^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$", RegexOptions.Compiled);
+
 
 	/// <inheritdoc/>
 
