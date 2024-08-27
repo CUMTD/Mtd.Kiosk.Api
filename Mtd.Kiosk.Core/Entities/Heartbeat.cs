@@ -5,7 +5,7 @@ namespace Mtd.Kiosk.Core.Entities;
 
 public class Heartbeat : GuidEntity, IEntity
 {
-	public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
+	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 	public string KioskId { get; set; }
 	public HeartbeatType Type { get; set; }
 	public virtual Kiosk Kiosk { get; set; }
@@ -14,7 +14,7 @@ public class Heartbeat : GuidEntity, IEntity
 	protected Heartbeat() : base()
 	{
 		KioskId = string.Empty;
-		Timestamp = DateTimeOffset.UtcNow;
+		Timestamp = DateTime.UtcNow;
 		Kiosk = new Kiosk();
 	}
 
@@ -25,7 +25,7 @@ public class Heartbeat : GuidEntity, IEntity
 		Type = type;
 	}
 
-	public HealthStatus GetHealthStatusForTime(DateTimeOffset time, int warningMinutes, int errorMinutes)
+	public HealthStatus GetHealthStatusForTime(DateTime time, int warningMinutes, int errorMinutes)
 	{
 		var timeSinceLastHeartbeat = time - Timestamp;
 
@@ -36,7 +36,6 @@ public class Heartbeat : GuidEntity, IEntity
 
 		if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(warningMinutes))
 		{
-
 			return HealthStatus.Warning;
 		}
 

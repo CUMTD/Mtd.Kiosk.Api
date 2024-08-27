@@ -241,7 +241,7 @@ public class KioskController : ControllerBase
 			return HealthStatus.Unknown;
 		}
 
-		return lastHeartbeat.GetHealthStatusForTime(DateTimeOffset.UtcNow, _apiConfiguration.WarningHeartbeatThresholdMinutes, _apiConfiguration.CriticalHeartbeatThresholdMinutes);
+		return lastHeartbeat.GetHealthStatusForTime(DateTime.UtcNow, _apiConfiguration.WarningHeartbeatThresholdMinutes, _apiConfiguration.CriticalHeartbeatThresholdMinutes);
 	}
 
 	/// <summary>
