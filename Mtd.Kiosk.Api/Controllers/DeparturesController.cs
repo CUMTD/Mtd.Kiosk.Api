@@ -120,9 +120,9 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(
-		[Required, MinLength(2), RegularExpression("^[A-Za-z][A-Za-z0-9]+(:[0-9])?$")]
+		[StopId(true)]
 		string stopId,
-		[FromQuery, StringLength(32), RegularExpression("[0-9a-z]{32}")]
+		[GuidId(false)]
 		string? kioskId,
 		CancellationToken cancellationToken,
 		[FromQuery, Range(1, int.MaxValue)]
@@ -163,7 +163,7 @@ public class DeparturesController : ControllerBase
 		// group departures by public route ID
 		var groupedDepartures = departures
 			.GroupBy(departure => routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID")
-			.Take(max); // TODO: Let's talk about this.
+			.Take(max);
 
 		// convert to LCD departure response model
 		var lcdDepartures = new List<LcdDepartureGroup>();

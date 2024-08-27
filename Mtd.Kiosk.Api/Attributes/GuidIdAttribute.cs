@@ -35,6 +35,6 @@ public class GuidIdAttribute(bool required) : ValidationAttribute
 		}
 
 		// If valid, return Success (using null-forgiving operator)
-		return ValidationResult.Success!;
+		return ValidationResult.Success;
 	}
 }
