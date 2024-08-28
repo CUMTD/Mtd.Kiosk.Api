@@ -25,3 +25,10 @@ updates:
       minor:
         update-types:
           - minor
+
+registries:
+  github-registry:
+    type: 'nuget-feed'
+    url: 'https://nuget.pkg.github.com/CUMTD/index.json'
+    username: 'x-access-token'
+    password: '${{secrets.GITHUB_TOKEN}}'
