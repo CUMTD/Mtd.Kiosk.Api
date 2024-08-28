@@ -49,6 +49,7 @@ updates:
     registries:
         - github-registry
 
+
 registries:
   github-registry:
     type: 'nuget-feed'
