@@ -22,9 +22,33 @@ updates:
     commit-message:
       prefix: '⬆️ '
     groups:
+      mtd:
+        patterns:
+          - 'Mtd.*'
+        update-types:
+          - minor
+          - patch
+      ef:
+        patterns:
+            - 'Microsoft.EntityFrameworkCore.*'
+        update-types:
+        - minor
+        - patch
+      logging:
+        patterns:
+            - 'Serilog.*'
+            - 'Microsoft.Extensions.Logging'
+            - 'Microsoft.Extensions.Logging.*'
+            - 'Seq.*'
+        update-types:
+        - minor
+        - patch
       minor:
         update-types:
           - minor
+    registries:
+        - github-registry
+
 
 registries:
   github-registry:
