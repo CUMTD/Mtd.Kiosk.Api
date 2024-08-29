@@ -40,7 +40,7 @@ public class TimeController : ControllerBase
 		ZonedDateTime zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
 
 		// Convert to UTC
-		DateTime utcDateTime = zonedDateTime.ToDateTimeUtc();
+		var utcDateTime = zonedDateTime.ToDateTimeUtc();
 
 		var c = new Coordinate(40.11560, -88.19520, utcDateTime);
 		var sunUp = c.CelestialInfo.IsSunUp;
