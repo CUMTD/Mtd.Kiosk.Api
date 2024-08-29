@@ -4,37 +4,37 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CoordinateSharp" Version="2.24.2.1" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Analyzers" Version="8.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Analyzers" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Mtd.Core" Version="8.1.1" />
     <PackageVersion Include="Mtd.Infrastructure.EFCore" Version="8.1.0" />
-    <PackageVersion Include="Mtd.Kiosk.IpDisplaysApi" Version="1.0.1" />
+    <PackageVersion Include="Mtd.Kiosk.IpDisplaysApi" Version="1.0.4" />
     <PackageVersion Include="Mtd.Stopwatch.Core" Version="8.1.4" />
     <PackageVersion Include="Mtd.Stopwatch.Infrastructure.EFCore" Version="8.1.1" />
     <PackageVersion Include="NodaTime" Version="3.1.11" />
     <PackageVersion Include="Polly.Extensions.Http" Version="3.0.0" />
     <PackageVersion Include="Seq.Extensions.Logging" Version="8.0.0" />
-    <PackageVersion Include="Serilog" Version="3.1.1" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageVersion Include="Serilog" Version="4.0.1" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageVersion Include="Serilog.Enrichers.Context" Version="4.6.5" />
-    <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
-    <PackageVersion Include="Serilog.Enrichers.Process" Version="2.0.2" />
-    <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageVersion Include="Serilog.Sinks.EventLog" Version="3.1.0" />
-    <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Seq" Version="7.0.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.6.2" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.EventLog" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.3" />
     <PackageVersion Include="System.ServiceModel.Duplex" Version="6.0.0" />
     <PackageVersion Include="System.ServiceModel.Federation" Version="8.0.0" />
     <PackageVersion Include="System.ServiceModel.Http" Version="8.0.0" />
