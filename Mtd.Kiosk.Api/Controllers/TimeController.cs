@@ -37,7 +37,7 @@ public class TimeController : ControllerBase
 	{
 
 		var zone = DateTimeZoneProviders.Tzdb["America/Chicago"];
-		ZonedDateTime zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
+		var zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
 
 		// Convert to UTC
 		var utcDateTime = zonedDateTime.ToDateTimeUtc();
