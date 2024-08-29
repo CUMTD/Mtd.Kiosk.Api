@@ -36,7 +36,7 @@ public class TimeController : ControllerBase
 	public ActionResult<bool> GetDarkModeStatus()
 	{
 
-		DateTimeZone zone = DateTimeZoneProviders.Tzdb["America/Chicago"];
+		var zone = DateTimeZoneProviders.Tzdb["America/Chicago"];
 		ZonedDateTime zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
 
 		// Convert to UTC
