@@ -35,7 +35,6 @@ public class TimeController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult<bool> GetDarkModeStatus()
 	{
-
 		var zone = DateTimeZoneProviders.Tzdb["America/Chicago"];
 		var zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
 
