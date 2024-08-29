@@ -67,13 +67,7 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures([StopId(true)] string stopId, [FromQuery, GuidId(false)] string? kioskId, CancellationToken cancellationToken)
 	{
-		if (string.IsNullOrEmpty(stopId))
-		{
-			return BadRequest();
-		}
-
-		// log the heartbeat. This is done in a "fire and forget" pattern.
-		LogHeartbeat(HeartbeatType.LED, kioskId);
+		await LogHeartbeat(HeartbeatType.LED, kioskId);
 
 		Departure[]? realTimeClientDepartures;
 		try
@@ -130,8 +124,7 @@ public class DeparturesController : ControllerBase
 		int max = 7
 	)
 	{
-		// log the heartbeat. This is done in a "fire and forget" pattern.
-		LogHeartbeat(HeartbeatType.LCD, kioskId);
+		await LogHeartbeat(HeartbeatType.LCD, kioskId);
 
 		// fetch from API
 		Departure[]? departures = null;
@@ -163,7 +156,11 @@ public class DeparturesController : ControllerBase
 
 		// group departures by public route ID
 		var groupedDepartures = departures
-			.GroupBy(departure => routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID")
+			.GroupBy(departure => new
+			{
+				publicRouteId = routes.FirstOrDefault(route => route.Id == departure.RouteId)?.PublicRouteId ?? "UNKNOWN_PUBLIC_ROUTE_ID",
+				direction = departure.Direction
+			})
 			.Take(max);
 
 		// convert to LCD departure response model
@@ -181,7 +178,7 @@ public class DeparturesController : ControllerBase
 
 			// match the public route for this group.
 			var publicRoute = routes
-				.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key)
+				.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key.publicRouteId)
 				.PublicRoute;
 
 			// public route should never be null here since we check for it in our first statement above.
@@ -222,7 +219,7 @@ public class DeparturesController : ControllerBase
 	/// </summary>
 	/// <param name="type">The type of component to log a heartbeat for.</param>
 	/// <param name="kioskId">The ID of the kiosk to log. If this is null, this method will not do anything.</param>
-	private void LogHeartbeat(HeartbeatType type, string? kioskId)
+	private async Task LogHeartbeat(HeartbeatType type, string? kioskId)
 	{
 		if (string.IsNullOrWhiteSpace(kioskId))
 		{
@@ -231,31 +228,15 @@ public class DeparturesController : ControllerBase
 		}
 
 		var heartbeat = new Heartbeat(kioskId, type);
+
 		try
 		{
-			_ = _heartbeatRepository
-				.AddAsync(heartbeat, CancellationToken.None)
-				.ContinueWith(task =>
-				{
-					if (task.Exception != null)
-					{
-						_logger.LogWarning(task.Exception, "Failed to add heartbeat {heartbeatType} for kiosk {kioskId}", type, kioskId ?? "unknown");
-					}
-				}, TaskContinuationOptions.OnlyOnFaulted);
-
-			_ = _heartbeatRepository.CommitChangesAsync(CancellationToken.None)
-				.ContinueWith(task =>
-				{
-					if (task.Exception != null)
-					{
-						_logger.LogWarning(task.Exception, "Failed to commit heartbeat {heartbeatType} for kiosk {kioskId}", type, kioskId ?? "unknown");
-					}
-				}, TaskContinuationOptions.OnlyOnFaulted);
+			await _heartbeatRepository.AddAsync(heartbeat, CancellationToken.None);
+			await _heartbeatRepository.CommitChangesAsync(CancellationToken.None);
 		}
 		catch (Exception ex)
 		{
-			// Handle or log unexpected synchronous exceptions
-			_logger.LogError(ex, "Unexpected exception while logging heartbeat.");
+			_logger.LogWarning(ex, "Failed to commit heartbeat {heartbeatType} for kiosk {kioskId}", heartbeat.Type, heartbeat.KioskId);
 		}
 	}
 

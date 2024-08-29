@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="CoordinateSharp" Version="2.24.2.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Analyzers" Version="8.0.7" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.7" />
@@ -19,6 +20,7 @@
     <PackageVersion Include="Mtd.Kiosk.IpDisplaysApi" Version="1.0.1" />
     <PackageVersion Include="Mtd.Stopwatch.Core" Version="8.1.4" />
     <PackageVersion Include="Mtd.Stopwatch.Infrastructure.EFCore" Version="8.1.1" />
+    <PackageVersion Include="NodaTime" Version="3.1.11" />
     <PackageVersion Include="Polly.Extensions.Http" Version="3.0.0" />
     <PackageVersion Include="Seq.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Serilog" Version="3.1.1" />
