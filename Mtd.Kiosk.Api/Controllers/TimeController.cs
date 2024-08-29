@@ -1,7 +1,7 @@
 ﻿using CoordinateSharp;
 using Microsoft.AspNetCore.Mvc;
+using Mtd.Kiosk.Api.Models;
 using NodaTime;
-
 
 namespace Mtd.Kiosk.Api.Controllers;
 
@@ -30,10 +30,9 @@ public class TimeController : ControllerBase
 	/// </summary>
 	/// <returns>True if dark mode should be enabled.</returns>
 	[HttpGet("dark-mode")]
-	[ProducesResponseType<bool>(StatusCodes.Status200OK)]
+	[ProducesResponseType<DarkModeResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public ActionResult<bool> GetDarkModeStatus()
+	public ActionResult<DarkModeResponseModel> GetDarkModeStatus()
 	{
 		var zone = DateTimeZoneProviders.Tzdb["America/Chicago"];
 		var zonedDateTime = SystemClock.Instance.GetCurrentInstant().InZone(zone);
@@ -43,6 +42,7 @@ public class TimeController : ControllerBase
 
 		var c = new Coordinate(40.11560, -88.19520, utcDateTime);
 		var sunUp = c.CelestialInfo.IsSunUp;
-		return Ok(!sunUp);
+
+		return new DarkModeResponseModel(!sunUp);
 	}
 }
