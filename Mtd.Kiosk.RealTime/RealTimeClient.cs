@@ -47,7 +47,9 @@ public class RealTimeClient
 
 		try
 		{
-			using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
+			//using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
+			using var contentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("[\r\n  {\r\n    \"id\": \"1722275126603@144\",\r\n    \"displayId\": \"144\",\r\n    \"text\": \"Attention all passengers catching buses southbound at the Transit Plaza, you are doing a great job!!!!\",\r\n    \"startTime\": \"2024-07-29T12:45:00.0000000-05:00\",\r\n    \"endTime\": \"2024-08-01T23:59:00.0000000-05:00\",\r\n    \"blockRealtime\": true,\r\n    \"stopIds\": [\r\n      \"crust:1\"\r\n    ]\r\n  },\r\n  {\r\n    \"id\": \"1722275126603@142\",\r\n    \"displayId\": \"142\",\r\n    \"text\": \"Attention all passengers catching buses southbound at the Transit Plaza, Please board at the NE corner of Sixth and Chalmers St. or the NE corner of Sixth and John St.\",\r\n    \"startTime\": \"2024-07-29T12:45:00.0000000-05:00\",\r\n    \"endTime\": \"2024-08-01T23:59:00.0000000-05:00\",\r\n    \"blockRealtime\": true,\r\n    \"stopIds\": [\r\n      \"PLAZA:1\"\r\n    ]\r\n  },\r\n  {\r\n    \"id\": \"1722285281932@123\",\r\n    \"displayId\": \"123\",\r\n    \"text\": \"Test Message.  Please ignore.\",\r\n    \"startTime\": \"2024-07-29T15:34:00.0000000-05:00\",\r\n    \"endTime\": \"2024-08-26T16:34:00.0000000-05:00\",\r\n    \"blockRealtime\": true,\r\n    \"stopIds\": [\r\n      \"BOING\"\r\n, \"IU\"    ]\r\n  }\r\n]"));
+
 			var gmResult = await JsonSerializer.DeserializeAsync<GeneralMessage[]>(contentStream, cancellationToken: cancellationToken);
 			return gmResult;
 		}
