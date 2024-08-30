@@ -42,7 +42,6 @@ public class TimeController : ControllerBase
 
 		var c = new Coordinate(40.11560, -88.19520, utcDateTime);
 		var sunUp = c.CelestialInfo.IsSunUp;
-		return new DarkModeResponseModel(true);
-		//return new DarkModeResponseModel(!sunUp);
+		return new DarkModeResponseModel(!sunUp);
 	}
 }
