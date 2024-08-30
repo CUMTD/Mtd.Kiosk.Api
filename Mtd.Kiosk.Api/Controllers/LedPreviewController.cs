@@ -1,7 +1,7 @@
-﻿using IpDisplaysSoapService;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Mtd.Kiosk.Api.Attributes;
-using Mtd.Led.Soap;
+using Mtd.Kiosk.IpDisplaysApi;
 
 namespace Mtd.Kiosk.Api.Controllers;
 
@@ -14,19 +14,31 @@ namespace Mtd.Kiosk.Api.Controllers;
 public class LedPreviewController : ControllerBase
 {
 	private readonly HttpClient _httpClient;
+	private readonly IOptions<IpDisplaysApiClientConfig> _ledConfig;
+	private readonly IpDisplaysApiClientFactory _ipDisplaysAPIClientFactory;
 	private readonly ILogger<LedPreviewController> _logger;
+	private readonly ILogger<IPDisplaysApiClient> _ipDisplaysApiClientLogger;
+
 	/// <summary>
-	/// Constructor for LedPreviewController.
+	///
 	/// </summary>
 	/// <param name="httpClient"></param>
+	/// <param name="ledConfig"></param>
+	/// <param name="displayLogger"></param>
 	/// <param name="logger"></param>
-	public LedPreviewController(HttpClient httpClient, ILogger<LedPreviewController> logger)
+	public LedPreviewController(HttpClient httpClient, IOptions<IpDisplaysApiClientConfig> ledConfig, ILogger<IPDisplaysApiClient> displayLogger, ILogger<LedPreviewController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(httpClient);
+		ArgumentNullException.ThrowIfNull(ledConfig);
+		ArgumentNullException.ThrowIfNull(displayLogger);
 		ArgumentNullException.ThrowIfNull(logger);
 
 		_httpClient = httpClient;
+		_ledConfig = ledConfig;
+		_ipDisplaysApiClientLogger = displayLogger;
 		_logger = logger;
+
+		_ipDisplaysAPIClientFactory = new IpDisplaysApiClientFactory(ledConfig, displayLogger);
 	}
 
 	/// <summary>
@@ -43,12 +55,12 @@ public class LedPreviewController : ControllerBase
 	[Produces("image/png")]
 	public async Task<ActionResult> GetLedPreviewImage([FromQuery, IpAddress(true)] string ledIp, CancellationToken cancellationToken)
 	{
-		GetScreenSnapshotResponse response;
+		Uri? previewImageUri;
 		try
 		{
-			var config = new IpDisplaysSoapConfig(ledIp, TimeSpan.FromSeconds(10));
-			var soapClient = config.GetSoapClient();
-			response = await soapClient.GetScreenSnapshotAsync(new GetScreenSnapshotRequest());
+			var client = _ipDisplaysAPIClientFactory.CreateClient(ledIp);
+			var ledSign = new LedSign(ledIp, client, _logger);
+			previewImageUri = await client.GetLedPreviewImageUri();
 		}
 		catch (TimeoutException)
 		{
@@ -61,24 +73,21 @@ public class LedPreviewController : ControllerBase
 			return StatusCode(500);
 		}
 
-		if (response == null)
+		if (previewImageUri == null)
 		{
 			_logger.LogWarning("Got a null response from SOAP client for LED preview of {ip}", ledIp);
 			return StatusCode(500);
 		}
 
-		//assemble the link to the image
-		var imageLink = $"http://{ledIp}/{response.fileName.Replace("\\", "/")}";
-
 		try
 		{
 			//download the image and return it
-			var image = await _httpClient.GetByteArrayAsync(imageLink, cancellationToken);
+			var image = await _httpClient.GetByteArrayAsync(previewImageUri, cancellationToken);
 			return File(image, "image/png");
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error downloading LED preview image at URL: {url}", imageLink);
+			_logger.LogError(ex, "Error downloading LED preview image at URL: {url}", previewImageUri);
 			return StatusCode(500);
 		}
 	}

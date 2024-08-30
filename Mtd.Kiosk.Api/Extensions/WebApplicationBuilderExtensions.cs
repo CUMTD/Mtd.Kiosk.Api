@@ -6,6 +6,7 @@ using Mtd.Kiosk.Api.Filters;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
+using Mtd.Kiosk.IpDisplaysApi;
 using Mtd.Kiosk.RealTime;
 using Mtd.Kiosk.RealTime.Config;
 using Mtd.Stopwatch.Core.Entities.Schedule;
@@ -62,6 +63,12 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services
 			.AddOptions<RealTimeClientConfig>()
 			.BindConfiguration("RealTimeClientConfig")
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+
+		_ = builder.Services
+			.AddOptions<IpDisplaysApiClientConfig>()
+			.BindConfiguration("IPDisplaysApiClient")
 			.ValidateDataAnnotations()
 			.ValidateOnStart();
 
@@ -160,6 +167,7 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
 		_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 		_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
+		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();
 
 		_ = builder.Services.AddMemoryCache();
 

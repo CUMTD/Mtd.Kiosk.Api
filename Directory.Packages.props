@@ -17,7 +17,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Mtd.Core" Version="8.1.1" />
     <PackageVersion Include="Mtd.Infrastructure.EFCore" Version="8.1.0" />
-    <PackageVersion Include="Mtd.Kiosk.IpDisplaysApi" Version="1.0.1" />
+    <PackageVersion Include="Mtd.Kiosk.IpDisplaysApi" Version="1.1.0" />
     <PackageVersion Include="Mtd.Stopwatch.Core" Version="8.1.4" />
     <PackageVersion Include="Mtd.Stopwatch.Infrastructure.EFCore" Version="8.1.1" />
     <PackageVersion Include="NodaTime" Version="3.1.11" />
