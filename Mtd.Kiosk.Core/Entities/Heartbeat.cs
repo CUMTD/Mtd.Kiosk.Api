@@ -8,14 +8,13 @@ public class Heartbeat : GuidEntity, IEntity
 	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 	public string KioskId { get; set; }
 	public HeartbeatType Type { get; set; }
-	public virtual Kiosk Kiosk { get; set; }
+	public virtual Kiosk? Kiosk { get; set; }
 
 	[SetsRequiredMembers]
 	protected Heartbeat() : base()
 	{
 		KioskId = string.Empty;
 		Timestamp = DateTime.UtcNow;
-		Kiosk = new Kiosk();
 	}
 
 	[SetsRequiredMembers]
@@ -23,6 +22,7 @@ public class Heartbeat : GuidEntity, IEntity
 	{
 		KioskId = kioskId;
 		Type = type;
+		Kiosk = new Kiosk(kioskId);
 	}
 
 	public HealthStatus GetHealthStatusForTime(DateTime time, int warningMinutes, int errorMinutes)

@@ -48,6 +48,7 @@ public class RealTimeClient
 		try
 		{
 			using var contentStream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken);
+
 			var gmResult = await JsonSerializer.DeserializeAsync<GeneralMessage[]>(contentStream, cancellationToken: cancellationToken);
 			return gmResult;
 		}
