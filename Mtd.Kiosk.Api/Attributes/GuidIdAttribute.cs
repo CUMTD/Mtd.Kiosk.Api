@@ -14,7 +14,6 @@ public class GuidIdAttribute(bool required) : ValidationAttribute
 {
 	private static readonly Regex _kioskIdRegex = new Regex("^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$", RegexOptions.Compiled);
 
-
 	/// <inheritdoc/>
 
 	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
