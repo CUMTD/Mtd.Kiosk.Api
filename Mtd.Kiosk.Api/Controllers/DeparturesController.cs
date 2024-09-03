@@ -21,6 +21,7 @@ public class DeparturesController : ControllerBase
 {
 	private readonly RealTimeClient _realTimeClient;
 	private readonly IHeartbeatRepository _heartbeatRepository;
+	private readonly IKioskRepository _kioskRepository;
 	private readonly IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>> _routeRepository;
 	private readonly IMemoryCache _cache;
 	private readonly ILogger<DeparturesController> _logger;
@@ -30,24 +31,28 @@ public class DeparturesController : ControllerBase
 	/// </summary>
 	/// <param name="realTimeClient"></param>
 	/// <param name="heartbeatRepository"></param>
+	/// <param name="kioskRepository"></param>
 	/// <param name="routeRepository"></param>
 	/// <param name="cache"></param>
 	/// <param name="logger"></param>
 	public DeparturesController(
 		RealTimeClient realTimeClient,
 		IHeartbeatRepository heartbeatRepository,
+		IKioskRepository kioskRepository,
 		IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>> routeRepository,
 		IMemoryCache cache,
 		ILogger<DeparturesController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(realTimeClient, nameof(realTimeClient));
 		ArgumentNullException.ThrowIfNull(heartbeatRepository, nameof(heartbeatRepository));
+		ArgumentNullException.ThrowIfNull(kioskRepository, nameof(kioskRepository));
 		ArgumentNullException.ThrowIfNull(routeRepository, nameof(routeRepository));
 		ArgumentNullException.ThrowIfNull(cache, nameof(cache));
 		ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
 		_realTimeClient = realTimeClient;
 		_heartbeatRepository = heartbeatRepository;
+		_kioskRepository = kioskRepository;
 		_routeRepository = routeRepository;
 		_cache = cache;
 		_logger = logger;
@@ -227,7 +232,15 @@ public class DeparturesController : ControllerBase
 			return;
 		}
 
-		var heartbeat = new Heartbeat(kioskId, type);
+		var kiosk = await _kioskRepository.GetByIdentityOrDefaultAsync(kioskId, CancellationToken.None);
+
+		if (kiosk == null)
+		{
+			kiosk = await _kioskRepository.AddAsync(new Core.Entities.Kiosk(kioskId), CancellationToken.None);
+			await _kioskRepository.CommitChangesAsync(CancellationToken.None);
+		}
+
+		var heartbeat = new Heartbeat(kioskId, type, kiosk);
 
 		try
 		{
