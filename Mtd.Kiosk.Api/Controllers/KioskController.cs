@@ -179,8 +179,8 @@ public class KioskController : ControllerBase
 	{
 		try
 		{
-			var kiosks = await KioskHealth(kioskId, cancellationToken);
-			return Ok();
+			var kioskHealth = await KioskHealth(kioskId, cancellationToken);
+			return Ok(kioskHealth);
 		}
 		catch (Exception ex)
 		{
