@@ -232,12 +232,29 @@ public class DeparturesController : ControllerBase
 			return;
 		}
 
-		var kiosk = await _kioskRepository.GetByIdentityOrDefaultAsync(kioskId, CancellationToken.None);
+		Core.Entities.Kiosk? kiosk;
+		try
+		{
+			kiosk = await _kioskRepository.GetByIdentityOrDefaultAsync(kioskId, CancellationToken.None);
+		}
+		catch(Exception ex)
+		{
+			_logger.LogError(ex, "Failed to fetch kiosk {kioskId}", kioskId);
+			return;
+		}
 
 		if (kiosk == null)
 		{
-			kiosk = await _kioskRepository.AddAsync(new Core.Entities.Kiosk(kioskId), CancellationToken.None);
-			await _kioskRepository.CommitChangesAsync(CancellationToken.None);
+			try
+			{
+				kiosk = await _kioskRepository.AddAsync(new Core.Entities.Kiosk(kioskId), CancellationToken.None);
+				await _kioskRepository.CommitChangesAsync(CancellationToken.None);
+			}
+			catch(Exception ex)
+			{
+				_logger.LogError(ex, "Failed to add new kiosk {kioskId}", kioskId);
+				return;
+			}
 		}
 
 		var heartbeat = new Heartbeat(kioskId, type, kiosk);
