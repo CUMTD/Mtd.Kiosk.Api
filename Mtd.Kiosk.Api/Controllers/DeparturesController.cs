@@ -180,7 +180,8 @@ public class DeparturesController : ControllerBase
 		var lcdDepartures = new List<LcdDepartureGroup>();
 		foreach (var group in groupedDepartures)
 		{
-			var isAcrossStreet = group.First().StopId != primaryStopId;
+			// determine if the stop is across the street from the kiosk, default false if additionalStopIds is empty or null
+			var isAcrossStreet = additionalStopIds.Length > 0 && group.First().StopId != primaryStopId;
 
 			// get the next 3 departures for each route
 			// and convert to response model
@@ -202,7 +203,13 @@ public class DeparturesController : ControllerBase
 			lcdDepartures.Add(lcdDeparture);
 		}
 
-		return Ok(new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder)));
+		// sort so that non isAcrossStreet routes will come immediately before isAcrossStreet routes
+		lcdDepartures = lcdDepartures
+			.OrderBy(lcdDeparture => lcdDeparture.SortOrder)
+			.ThenBy(lcdDeparture => lcdDeparture.IsAcrossStreet)
+			.ToList();
+
+		return Ok(new LcdDepartureResponseModel(lcdDepartures));
 	}
 
 	#region Helpers
