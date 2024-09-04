@@ -12,7 +12,8 @@ namespace Mtd.Kiosk.Api.Models;
 /// <param name="publicRoute">The public route from the database that is associated with this departure.</param>
 /// <param name="lcdDepartures">All upcoming departure times for this route.</param>
 /// <param name="direction">The direction associated with these trips.</param>
-public class LcdDepartureGroup(PublicRoute publicRoute, IEnumerable<LcdDepartureTime> lcdDepartures, string direction)
+/// <param name="isAcrossStreet">Whether the stop is across the street from the kiosk.</param>
+public class LcdDepartureGroup(PublicRoute publicRoute, IEnumerable<LcdDepartureTime> lcdDepartures, string direction, bool isAcrossStreet)
 {
 	/// <summary>
 	/// The route number.
@@ -48,6 +49,12 @@ public class LcdDepartureGroup(PublicRoute publicRoute, IEnumerable<LcdDeparture
 	/// </summary>
 	[JsonPropertyName("sortOrder")]
 	public int SortOrder { get; set; } = publicRoute.PublicRouteGroup.SortNumber;
+
+	/// <summary>
+	/// Whether the stop is across the street from the kiosk.
+	/// </summary>
+	[JsonPropertyName("isAcrossStreet")]
+	public bool IsAcrossStreet { get; set; } = isAcrossStreet;
 
 	/// <summary>
 	/// The departure times for the route.
