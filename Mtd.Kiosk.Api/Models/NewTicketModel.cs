@@ -17,7 +17,7 @@ public class NewTicketModel
 	/// <summary>
 	/// The name of the user who opened the ticket.
 	/// </summary>
-	[Required, RegularExpression("/^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z]*)*$/\r\n")]
+	[Required, RegularExpression("^[A-Za-z]+(?:[-'][A-Za-z]+)?(?:\\s[A-Za-z]+(?:[-'][A-Za-z]+)?)*$")]
 	public required string OpenedBy { get; set; }
 	/// <summary>
 	/// The description of the ticket.
