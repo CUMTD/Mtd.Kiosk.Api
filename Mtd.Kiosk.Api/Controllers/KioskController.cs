@@ -192,26 +192,26 @@ public class KioskController : ControllerBase
 	/// <summary>
 	/// Get tickets for a kiosk id.
 	/// </summary>
-	/// <param name="KioskId">The kiosk id to fetc htickets for.</param>
+	/// <param name="kioskId"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns>An array of Ticket objects.</returns>
 	[HttpGet("{kioskId}/tickets")]
 	[ProducesResponseType<IEnumerable<Ticket>>(StatusCodes.Status200OK)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<IEnumerable<Ticket>>> GetTicketsByKiosk([GuidId(true)] string KioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IEnumerable<Ticket>>> GetTicketsByKiosk([GuidId(true)] string kioskId, CancellationToken cancellationToken)
 	{
 		IEnumerable<Ticket> tickets;
 		try
 		{
-			var dbTickets = await _ticketRepository.GetByKioskIdAsync(KioskId, cancellationToken);
+			var dbTickets = await _ticketRepository.GetByKioskIdAsync(kioskId, cancellationToken);
 
 			// sort into open and closed tickets
 			tickets = (dbTickets?.OrderByDescending(t => t.Status == TicketStatusType.Open).ThenByDescending(t => t.OpenDate)) ?? Enumerable.Empty<Ticket>();
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error getting tickets for kiosk: {kioskId}", KioskId);
+			_logger.LogError(ex, "Error getting tickets for kiosk: {kioskId}", kioskId);
 			return StatusCode(500);
 		}
 

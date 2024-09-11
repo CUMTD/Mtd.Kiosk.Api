@@ -130,7 +130,7 @@ public class DeparturesController : ControllerBase
 		string? kioskId,
 		CancellationToken cancellationToken,
 		[FromQuery, Range(1, int.MaxValue)]
-		int max = 7
+		int max = int.MaxValue
 	)
 	{
 		await LogHeartbeat(HeartbeatType.LCD, kioskId);
@@ -204,10 +204,9 @@ public class DeparturesController : ControllerBase
 		}
 
 		// sort so that non isAcrossStreet routes will come immediately before isAcrossStreet routes
-		lcdDepartures = lcdDepartures
+		lcdDepartures = [.. lcdDepartures
 			.OrderBy(lcdDeparture => lcdDeparture.SortOrder)
-			.ThenBy(lcdDeparture => lcdDeparture.IsAcrossStreet)
-			.ToList();
+			.ThenBy(lcdDeparture => lcdDeparture.IsAcrossStreet)];
 
 		return Ok(new LcdDepartureResponseModel(lcdDepartures));
 	}

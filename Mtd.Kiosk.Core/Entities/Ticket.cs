@@ -1,4 +1,6 @@
-﻿using Mtd.Core.Entities;
+﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+using Mtd.Core.Entities;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Mtd.Kiosk.Core.Entities;
@@ -13,7 +15,7 @@ public class Ticket() : GuidEntity(), IEntity
 	public string OpenedBy { get; set; } = string.Empty;
 	public string? Description { get; set; }
 	public string Title { get; set; } = string.Empty;
-	public virtual Kiosk Kiosk { get; set; } = new Kiosk();
+	public virtual Kiosk Kiosk { get; set; }
 	public virtual ICollection<TicketNote> Notes { get; set; } = [];
 
 	[SetsRequiredMembers]
@@ -25,3 +27,5 @@ public class Ticket() : GuidEntity(), IEntity
 		Description = description;
 	}
 }
+
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

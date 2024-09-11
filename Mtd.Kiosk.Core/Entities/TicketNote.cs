@@ -1,4 +1,6 @@
-﻿using Mtd.Core.Entities;
+﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+using Mtd.Core.Entities;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -22,7 +24,6 @@ public class TicketNote : GuidEntity, IEntity
 		CreatedDate = DateTime.Now;
 		CreatedBy = string.Empty;
 		Deleted = false;
-		Ticket = new Ticket();
 	}
 
 	[SetsRequiredMembers]
@@ -33,3 +34,5 @@ public class TicketNote : GuidEntity, IEntity
 		MarkdownBody = markdownBody;
 	}
 }
+
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
