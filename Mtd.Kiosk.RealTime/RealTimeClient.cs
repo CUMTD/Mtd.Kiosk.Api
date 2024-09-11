@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Mtd.Kiosk.RealTime.Config;
 using Mtd.Kiosk.RealTime.Entities;
+using System.Collections.Specialized;
 using System.Text.Json;
 
 namespace Mtd.Kiosk.RealTime;
@@ -59,23 +60,33 @@ public class RealTimeClient
 		}
 	}
 
-	public async Task<Departure[]?> GetRealTimeForStop(string stopId, CancellationToken cancellationToken)
+	public async Task<Departure[]?> GetRealTimeForStops(string[] stopIds, CancellationToken cancellationToken)
 	{
 		HttpResponseMessage httpResponseMessage;
 		try
 		{
-			var url = $"{_config.SmUri?.ToString()}?stopIds={stopId}&previewTime=60";
+			NameValueCollection queryString = System.Web.HttpUtility.ParseQueryString(string.Empty);
+
+			for (int i = 0; i < stopIds.Length; i++)
+			{
+				queryString.Add("stopIds", stopIds[i]);
+			}
+
+			queryString.Add("previewTime", "60");
+
+			var url = $"{_config.SmUri?.ToString()}?{queryString}";
+
 			httpResponseMessage = await _client.GetAsync(url, cancellationToken);
 			httpResponseMessage.EnsureSuccessStatusCode();
 		}
 		catch (HttpRequestException ex)
 		{
-			_logger.LogError(ex, "Error getting real-time data for stop {stopId}. Server returned an {code} code.", stopId, ex.StatusCode);
+			_logger.LogError(ex, "Error getting real-time data for stops {stopIds}. Server returned an {code} code.", stopIds, ex.StatusCode);
 			return null;
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error getting real-time data for stop {stopId}", stopId);
+			_logger.LogError(ex, "Error getting real-time data for stops {stopIds}", stopIds);
 			return null;
 		}
 
@@ -85,7 +96,7 @@ public class RealTimeClient
 
 			if (contentStream.Length == 0)
 			{
-				_logger.LogWarning("Got a response with no content for stop {stopId}", stopId);
+				_logger.LogWarning("Got a response with no content for stops {stopIds}", stopIds);
 				return null;
 			}
 
@@ -94,7 +105,7 @@ public class RealTimeClient
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error deserializing real-time data for stop {stopId}", stopId);
+			_logger.LogError(ex, "Error deserializing real-time data for stops {stopIds}", stopIds);
 			return null;
 		}
 	}

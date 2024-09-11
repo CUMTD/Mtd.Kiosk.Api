@@ -1,40 +1,97 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using System.Reflection;
 
 namespace Mtd.Kiosk.Api.Attributes;
 
-/// <summary>
-/// Custom validation attribute to validate Kiosk ID patterns.
-/// Ensures the Kiosk ID is exactly 32 characters long and contains only lowercase letters and digits.
-/// </summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-public class GuidIdAttribute(bool required) : ValidationAttribute
+[AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
+internal class GuidIdAttribute(bool isRequired = false) : Attribute
 {
-	private static readonly Regex _kioskIdRegex = new Regex("^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$", RegexOptions.Compiled);
+	public bool IsRequired { get; } = isRequired;
+}
 
-	/// <inheritdoc/>
+internal class GuidModelBinder(bool isRequired) : IModelBinder
+{
+	private readonly bool _isRequired = isRequired;
 
-	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+	public Task BindModelAsync(ModelBindingContext bindingContext)
 	{
-		if (value == null)
+		var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.FieldName);
+
+		if (valueProviderResult == ValueProviderResult.None)
 		{
-			if (required)
+			if (_isRequired)
 			{
-				return new ValidationResult("A GUID is required.");
+				bindingContext.ModelState.AddModelError(bindingContext.FieldName, "The GUID is required.");
 			}
 
-			return ValidationResult.Success;
+			return Task.CompletedTask;
 		}
 
-		if (value is not string stringValue || !_kioskIdRegex.IsMatch(stringValue))
+		var value = valueProviderResult.FirstValue;
+
+		if (_isRequired && string.IsNullOrWhiteSpace(value))
 		{
-			// Return a ValidationResult with the error message
-			return new ValidationResult("The GUID format is invalid. It must be exactly 32 characters long, containing only lowercase letters and digits.");
+			bindingContext.ModelState.AddModelError(bindingContext.FieldName, "The GUID is required.");
+			return Task.CompletedTask;
 		}
 
-		// If valid, return Success (using null-forgiving operator)
-		return ValidationResult.Success;
+		if (!Guid.TryParse(value, out var guid))
+		{
+			bindingContext.ModelState.AddModelError(bindingContext.FieldName, "Invalid GUID format.");
+			return Task.CompletedTask;
+		}
+
+		bindingContext.Result = ModelBindingResult.Success(guid);
+		return Task.CompletedTask;
+	}
+}
+
+internal class GuidModelBinderProvider : IModelBinderProvider
+{
+	public IModelBinder? GetBinder(ModelBinderProviderContext context)
+	{
+		// Ensure we are working with a parameter or property that has the GuidId attribute
+		if (context.Metadata is DefaultModelMetadata metadata && metadata.ContainerType != null)
+		{
+			// 1. Check for GuidId attribute on a method parameter
+			if (metadata.ParameterName != null)
+			{
+				// Find the method that contains the parameter with the GuidId attribute
+				var methodInfo = metadata.ContainerType
+					.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+					.FirstOrDefault(method => method.GetParameters().Any(p => p.Name == metadata.ParameterName));
+
+				var parameterInfo = methodInfo?.GetParameters().FirstOrDefault(p => p.Name == metadata.ParameterName);
+
+				if (parameterInfo != null)
+				{
+					// Retrieve the GuidId attribute from the parameter
+					var guidIdAttribute = parameterInfo.GetCustomAttribute<GuidIdAttribute>();
+					if (guidIdAttribute != null)
+					{
+						return new GuidModelBinder(guidIdAttribute.IsRequired);
+					}
+				}
+			}
+
+			// 2. Check for GuidId attribute on a property
+			if (metadata.PropertyName != null)
+			{
+				var propertyInfo = metadata.ContainerType.GetProperty(metadata.PropertyName);
+
+				if (propertyInfo != null)
+				{
+					// Retrieve the GuidId attribute from the property
+					var guidIdAttribute = propertyInfo.GetCustomAttribute<GuidIdAttribute>();
+					if (guidIdAttribute != null)
+					{
+						return new GuidModelBinder(guidIdAttribute.IsRequired);
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Api.Config;
 using Mtd.Kiosk.Api.Filters;
 using Mtd.Kiosk.Core.Repositories;
@@ -85,7 +86,10 @@ internal static class WebApplicationBuilderExtensions
 		var corsPolicyName = builder.Configuration["Cors:PolicyName"] ?? throw new InvalidOperationException("Cors:PolicyName not defined");
 		var corsAllowedOrigin = builder.Configuration["Cors:AllowedOrigins"] ?? throw new InvalidOperationException("Cors:AllowedOrigins not defined");
 
-		_ = builder.Services.AddControllers();
+		_ = builder.Services.AddControllers(options =>
+		{
+			options.ModelBinderProviders.Insert(0, new GuidModelBinderProvider());
+		});
 
 		_ = builder.Services.AddCors(options => options.AddPolicy(
 			corsPolicyName,

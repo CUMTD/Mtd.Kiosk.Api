@@ -40,7 +40,7 @@ public class MessagingController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<SimpleGeneralMessage>>> GetGeneralMessages(CancellationToken cancellationToken)
 	{
-		GeneralMessage[]? result = null;
+		GeneralMessage[]? result;
 		try
 		{
 			result = await _realTimeClient.GetGeneralMessagesAsync(cancellationToken);
@@ -71,9 +71,8 @@ public class MessagingController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult<GeneralMessage>> GetLcdGeneralMessages([FromQuery, StopId(true)] string stopId, CancellationToken cancellationToken)
+	public async Task<ActionResult<GeneralMessage>> GetLcdGeneralMessagesAsync([FromQuery, StopId(true)] string stopId, CancellationToken cancellationToken)
 	{
-
 		GeneralMessage[]? currentGeneralMessages = null;
 		try
 		{

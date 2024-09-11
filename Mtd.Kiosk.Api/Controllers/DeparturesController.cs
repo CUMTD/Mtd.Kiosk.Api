@@ -77,7 +77,7 @@ public class DeparturesController : ControllerBase
 		Departure[]? realTimeClientDepartures;
 		try
 		{
-			realTimeClientDepartures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
+			realTimeClientDepartures = await _realTimeClient.GetRealTimeForStops([stopId], cancellationToken);
 		}
 		catch (Exception ex)
 		{
@@ -109,44 +109,52 @@ public class DeparturesController : ControllerBase
 	/// <summary>
 	/// Get the next departures for an LCD screen.
 	/// </summary>
-	/// <param name="stopId">The stop Id to fetch departures for</param>
+	/// <param name="primaryStopId">The primary stop Id to fetch departures for</param>
+	/// <param name="additionalStopIds">The stop Ids to fetch departures for</param>
 	/// <param name="kioskId">The kiosk Id, for logging a heartbeat</param>
 	/// <param name="max">The maximum number of route groups to return</param>
 	/// <param name="cancellationToken"></param>
 	/// <returns>An array of LLcdDepartureGroup objects</returns>
-	[HttpGet("{stopId}/lcd")]
+	[HttpGet("{primaryStopId}/lcd")]
 	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<LcdDepartureResponseModel>> GetLcdDepartures(
 		[StopId(true)]
-		string stopId,
+		string primaryStopId,
+		[StopIdArray(true)]
+		[FromQuery]
+		string[] additionalStopIds,
 		[GuidId(false)]
 		string? kioskId,
 		CancellationToken cancellationToken,
 		[FromQuery, Range(1, int.MaxValue)]
-		int max = 7
+		int max = int.MaxValue
 	)
 	{
 		await LogHeartbeat(HeartbeatType.LCD, kioskId);
+
+		// combine the primary stop ID with the additional stop IDs into string[]
+		var stopIds = new List<string> { primaryStopId };
+		stopIds.AddRange(additionalStopIds);
 
 		// fetch from API
 		Departure[]? departures = null;
 		try
 		{
-			departures = await _realTimeClient.GetRealTimeForStop(stopId, cancellationToken);
+			departures = await _realTimeClient.GetRealTimeForStops(stopIds.ToArray(), cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Failed to get deparutres from real-time client for {stopId}.", stopId);
+			_logger.LogError(ex, "Failed to get deparutres from real-time client for {stopIds}.", stopIds);
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
 		// ensure API returned data.
 		if (departures == null)
 		{
-			_logger.LogWarning("Real-time client returned null for {stopId}.", stopId);
+			_logger.LogWarning("Real-time client returned null for {stopId}.", stopIds);
 			return StatusCode(StatusCodes.Status500InternalServerError);
 		}
 
@@ -172,6 +180,9 @@ public class DeparturesController : ControllerBase
 		var lcdDepartures = new List<LcdDepartureGroup>();
 		foreach (var group in groupedDepartures)
 		{
+			// determine if the stop is across the street from the kiosk, default false if additionalStopIds is empty or null
+			var isAcrossStreet = additionalStopIds.Length > 0 && group.First().StopId != primaryStopId;
+
 			// get the next 3 departures for each route
 			// and convert to response model
 			var lcdDepartureTimes = group
@@ -186,13 +197,18 @@ public class DeparturesController : ControllerBase
 				.First(route => route.PublicRouteId != null && route.PublicRouteId == group.Key.publicRouteId)
 				.PublicRoute;
 
-			// public route should never be null here since we check for it in our first statement above.
-			var lcdDeparture = new LcdDepartureGroup(publicRoute!, lcdDepartureTimes, group.First().Direction);
+			// public route should never be null here since we check for it in our first statement above
+			var lcdDeparture = new LcdDepartureGroup(publicRoute!, lcdDepartureTimes, group.First().Direction, isAcrossStreet);
 
 			lcdDepartures.Add(lcdDeparture);
 		}
 
-		return Ok(new LcdDepartureResponseModel(lcdDepartures.OrderBy(d => d.SortOrder)));
+		// sort so that non isAcrossStreet routes will come immediately before isAcrossStreet routes
+		lcdDepartures = [.. lcdDepartures
+			.OrderBy(lcdDeparture => lcdDeparture.SortOrder)
+			.ThenBy(lcdDeparture => lcdDeparture.IsAcrossStreet)];
+
+		return Ok(new LcdDepartureResponseModel(lcdDepartures));
 	}
 
 	#region Helpers
@@ -237,7 +253,7 @@ public class DeparturesController : ControllerBase
 		{
 			kiosk = await _kioskRepository.GetByIdentityOrDefaultAsync(kioskId, CancellationToken.None);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Failed to fetch kiosk {kioskId}", kioskId);
 			return;
@@ -250,7 +266,7 @@ public class DeparturesController : ControllerBase
 				kiosk = await _kioskRepository.AddAsync(new Core.Entities.Kiosk(kioskId), CancellationToken.None);
 				await _kioskRepository.CommitChangesAsync(CancellationToken.None);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to add new kiosk {kioskId}", kioskId);
 				return;
