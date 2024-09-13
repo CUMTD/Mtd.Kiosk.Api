@@ -1,5 +1,6 @@
 ﻿using Mtd.Kiosk.RealTime.Entities;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Mtd.Kiosk.Api.Models;
 
@@ -12,6 +13,8 @@ namespace Mtd.Kiosk.Api.Models;
 /// <param name="departure">The departure time to use.</param>
 public class LcdDepartureTime(Departure departure)
 {
+	private static readonly string[] _nonDestinationStrings = ["express"];
+
 	/// <summary>
 	/// The time of the departure. Can be "DUE", "1 min", "XX mins", or "HH:MM AM".
 	/// </summary>
@@ -29,4 +32,36 @@ public class LcdDepartureTime(Departure departure)
 	/// </summary>
 	[JsonPropertyName("isHopper")]
 	public bool IsHopper { get; set; } = departure.IsHopper;
+
+	/// <summary>
+	/// The modifier text for the departure, e.g. "Hopper" or "To Gerty".
+	/// </summary>
+	[JsonPropertyName("modifier")]
+	public string Modifier
+	{
+		get
+		{
+
+			var routeIdWithoutHopper = Regex.Replace(departure.RouteId, "hopper", string.Empty, RegexOptions.IgnoreCase);
+			var destination = Regex.Replace(departure.RouteColor, $"{routeIdWithoutHopper}|hopper", string.Empty, RegexOptions.IgnoreCase).Trim();
+
+			if (destination.Length > 0)
+			{
+				if (_nonDestinationStrings.Any(str => string.Equals(str, destination, StringComparison.OrdinalIgnoreCase)))
+				{
+					return destination;
+				}
+
+				return $"to {destination}";
+			}
+
+			return string.Empty;
+
+		}
+		set
+		{
+			// Do nothing
+		}
+	}
 }
+
