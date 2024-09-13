@@ -13,6 +13,8 @@ namespace Mtd.Kiosk.Api.Models;
 /// <param name="departure">The departure time to use.</param>
 public class LcdDepartureTime(Departure departure)
 {
+	private static readonly string[] _nonDestinationStrings = ["express"];
+
 	/// <summary>
 	/// The time of the departure. Can be "DUE", "1 min", "XX mins", or "HH:MM AM".
 	/// </summary>
@@ -45,12 +47,12 @@ public class LcdDepartureTime(Departure departure)
 
 			if (destination.Length > 0)
 			{
-				if (destination.Equals("Express", StringComparison.OrdinalIgnoreCase))
+				if (_nonDestinationStrings.Any(str => string.Equals(str, destination, StringComparison.OrdinalIgnoreCase)))
 				{
-					return "EXPRESS".ToUpper();
+					return destination;
 				}
 
-				return $"TO {destination}".ToUpper();
+				return $"to {destination}";
 			}
 
 			return string.Empty;
