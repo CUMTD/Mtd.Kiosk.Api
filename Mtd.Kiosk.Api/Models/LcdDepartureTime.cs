@@ -43,7 +43,7 @@ public class LcdDepartureTime(Departure departure)
 		{
 
 			var routeIdWithoutHopper = Regex.Replace(departure.RouteId, "hopper", string.Empty, RegexOptions.IgnoreCase);
-			var destination = Regex.Replace(departure.RouteColor, $"{routeIdWithoutHopper}|hopper", string.Empty, RegexOptions.IgnoreCase).Trim();
+			var destination = Regex.Replace(departure.RouteColor, $"{routeIdWithoutHopper}|hopper|{departure.RouteColor}", string.Empty, RegexOptions.IgnoreCase).Trim();
 
 			if (destination.Length > 0)
 			{
