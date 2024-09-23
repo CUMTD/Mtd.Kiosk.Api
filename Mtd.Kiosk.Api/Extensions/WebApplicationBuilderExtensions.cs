@@ -148,7 +148,7 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddDbContextPool<KioskContext>((sp, options) =>
 		{
 			var connectionString = sp.GetRequiredService<IOptions<ConnectionStrings>>().Value.KioskConnection;
-			options.UseSqlServer(connectionString);
+			options.UseSqlServer(connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
 			options.UseLazyLoadingProxies();
 		});
 
