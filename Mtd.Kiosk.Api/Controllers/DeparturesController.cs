@@ -72,7 +72,6 @@ public class DeparturesController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<IEnumerable<LedDeparture>>> GetLedDepartures([StopId(true)] string stopId, [FromQuery, GuidId(false)] string? kioskId, CancellationToken cancellationToken)
 	{
-		await LogHeartbeat(HeartbeatType.LED, kioskId);
 
 		Departure[]? realTimeClientDepartures;
 		try
@@ -273,7 +272,7 @@ public class DeparturesController : ControllerBase
 			}
 		}
 
-		var heartbeat = new Heartbeat(kioskId, type, kiosk);
+		var heartbeat = new Heartbeat(kioskId, type);
 
 		try
 		{
