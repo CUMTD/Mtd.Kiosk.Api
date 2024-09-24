@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
@@ -44,14 +43,14 @@ public class HeartbeatController : ControllerBase
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	[HttpPost("led")]
-	[ProducesResponseType<ProblemDetails>(StatusCodes.Status201Created)]
-	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> IngestLEDHeartbeat([FromQuery][GuidId] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult> IngestLEDHeartbeat([FromQuery] string? kioskId, CancellationToken cancellationToken)
 	{
-		if (string.IsNullOrWhiteSpace(kioskId))
+		if (string.IsNullOrEmpty(kioskId) || !Guid.TryParse(kioskId, out _))
 		{
-			return BadRequest();
+			return BadRequest("Not a valid GUID.");
 		}
 
 		var heartbeat = new Heartbeat(kioskId, HeartbeatType.LED);
