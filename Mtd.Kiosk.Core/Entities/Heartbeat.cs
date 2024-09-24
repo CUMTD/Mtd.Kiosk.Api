@@ -18,11 +18,10 @@ public class Heartbeat : GuidEntity, IEntity
 	}
 
 	[SetsRequiredMembers]
-	public Heartbeat(string kioskId, HeartbeatType type, Kiosk kiosk) : this()
+	public Heartbeat(string kioskId, HeartbeatType type) : this()
 	{
 		KioskId = kioskId;
 		Type = type;
-		Kiosk = kiosk;
 	}
 
 	public HealthStatus GetHealthStatusForTime(DateTime time, int warningMinutes, int errorMinutes)
