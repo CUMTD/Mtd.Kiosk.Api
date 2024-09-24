@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 
@@ -46,7 +47,7 @@ public class HeartbeatController : ControllerBase
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status201Created)]
 	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> IngestLEDHeartbeat([FromQuery] string? kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult> IngestLEDHeartbeat([FromQuery][GuidId] string? kioskId, CancellationToken cancellationToken)
 	{
 		if (string.IsNullOrWhiteSpace(kioskId))
 		{
