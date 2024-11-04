@@ -12,7 +12,7 @@ namespace Mtd.Kiosk.Api.Controllers;
 [Route("heartbeat")]
 public class HeartbeatController : ControllerBase
 {
-	private readonly IHeartbeatRepository _heartbeatRepository;
+	private readonly IHealthRepository _heartbeatRepository;
 	private readonly IKioskRepository _kioskRepository;
 	private readonly ILogger<HeartbeatController> _logger;
 
@@ -23,7 +23,7 @@ public class HeartbeatController : ControllerBase
 	/// <param name="kioskRepository"></param>
 	/// <param name="logger"></param>
 	public HeartbeatController(
-		IHeartbeatRepository heartbeatRepository,
+		IHealthRepository heartbeatRepository,
 		IKioskRepository kioskRepository,
 		ILogger<HeartbeatController> logger)
 	{
@@ -53,11 +53,25 @@ public class HeartbeatController : ControllerBase
 			return BadRequest("Not a valid GUID.");
 		}
 
-		var heartbeat = new Heartbeat(kioskId, HeartbeatType.LED);
+		// get heartbeat entry for LED
+
+		var existingHeartbeat = await _heartbeatRepository.GetHeartbeatByIdentityAndTypeAsync(kioskId, HeartbeatType.LED, cancellationToken);
 
 		try
 		{
-			await _heartbeatRepository.AddAsync(heartbeat, cancellationToken);
+			// update the heartbeat's LastUpdated time
+
+			if (existingHeartbeat != null)
+			{
+				existingHeartbeat.LastHeartbeat = DateTime.UtcNow;
+			}
+			else
+			{
+				// create a new heartbeat entry
+				var heartbeat = new Health(kioskId, HeartbeatType.LED);
+				await _heartbeatRepository.AddAsync(heartbeat, cancellationToken);
+			}
+
 			await _heartbeatRepository.CommitChangesAsync(cancellationToken);
 			_logger.LogInformation("Logged LED heartbeat for kiosk {KioskId}", kioskId);
 		}

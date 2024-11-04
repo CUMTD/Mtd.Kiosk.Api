@@ -2,7 +2,7 @@
 
 namespace Mtd.Kiosk.Core.Repositories;
 
-public interface ITicketNoteRepository : IRepository<TicketNote>
+public interface ITicketNoteRepository : IIdentityRepository<TicketNote>
 {
 
 }

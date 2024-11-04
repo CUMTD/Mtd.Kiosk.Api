@@ -3,22 +3,22 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Mtd.Kiosk.Core.Entities;
 
-public class Heartbeat : GuidEntity, IEntity
+public class Health : IEntity
 {
-	public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 	public string KioskId { get; set; }
+	public DateTime LastHeartbeat { get; set; } = DateTime.UtcNow;
 	public HeartbeatType Type { get; set; }
 	public virtual Kiosk? Kiosk { get; set; }
 
 	[SetsRequiredMembers]
-	protected Heartbeat() : base()
+	protected Health() : base()
 	{
 		KioskId = string.Empty;
-		Timestamp = DateTime.UtcNow;
+		LastHeartbeat = DateTime.UtcNow;
 	}
 
 	[SetsRequiredMembers]
-	public Heartbeat(string kioskId, HeartbeatType type) : this()
+	public Health(string kioskId, HeartbeatType type) : this()
 	{
 		KioskId = kioskId;
 		Type = type;
@@ -26,7 +26,7 @@ public class Heartbeat : GuidEntity, IEntity
 
 	public HealthStatus GetHealthStatusForTime(DateTime time, int warningMinutes, int errorMinutes)
 	{
-		var timeSinceLastHeartbeat = time - Timestamp;
+		var timeSinceLastHeartbeat = time - LastHeartbeat;
 
 		if (timeSinceLastHeartbeat > TimeSpan.FromMinutes(errorMinutes))
 		{

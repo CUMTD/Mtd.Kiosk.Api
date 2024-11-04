@@ -6,7 +6,7 @@ namespace Mtd.Kiosk.Infrastructure.EfCore;
 
 public class KioskContext(DbContextOptions<KioskContext> options) : DbContext(options)
 {
-	public DbSet<Heartbeat> Heartbeats { get; protected set; }
+	public DbSet<Health> Heartbeats { get; protected set; }
 	public DbSet<Core.Entities.Kiosk> Kiosks { get; protected set; }
 	public DbSet<Ticket> Tickets { get; protected set; }
 	public DbSet<TicketNote> TicketNotes { get; protected set; }
@@ -15,7 +15,7 @@ public class KioskContext(DbContextOptions<KioskContext> options) : DbContext(op
 	{
 		base.OnModelCreating(modelBuilder);
 
-		modelBuilder.ApplyConfiguration(new HeartbeatConfiguration());
+		modelBuilder.ApplyConfiguration(new HealthConfiguration());
 		modelBuilder.ApplyConfiguration(new KioskConfiguration());
 		modelBuilder.ApplyConfiguration(new TicketConfiguration());
 		modelBuilder.ApplyConfiguration(new TicketNoteConfiguration());
