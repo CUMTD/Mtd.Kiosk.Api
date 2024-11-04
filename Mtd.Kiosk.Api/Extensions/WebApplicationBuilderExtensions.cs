@@ -168,7 +168,7 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddScoped<IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>>, RouteRepository>();
 
 		_ = builder.Services.AddScoped<IKioskRepository, KioskRepository>();
-		_ = builder.Services.AddScoped<IHeartbeatRepository, HeartbeatRepository>();
+		_ = builder.Services.AddScoped<IHealthRepository, HealthRepository>();
 		_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 		_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
 		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();

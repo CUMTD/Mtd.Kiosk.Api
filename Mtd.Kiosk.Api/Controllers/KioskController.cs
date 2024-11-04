@@ -18,7 +18,7 @@ namespace Mtd.Kiosk.Api.Controllers;
 public class KioskController : ControllerBase
 {
 	private readonly IKioskRepository _kioskRepository;
-	private readonly IHeartbeatRepository _heartbeatRepository;
+	private readonly IHealthRepository _heartbeatRepository;
 	private readonly ITicketRepository _ticketRepository;
 	private readonly ILogger<KioskController> _logger;
 	private readonly ApiConfiguration _apiConfiguration;
@@ -32,7 +32,7 @@ public class KioskController : ControllerBase
 	/// <param name="logger"></param>
 	/// <param name="apiConfiguration"></param>
 	/// <exception cref="ArgumentNullException"></exception>
-	public KioskController(IKioskRepository kioskRepository, IHeartbeatRepository heartbeatRepository, ITicketRepository ticketRepository, IOptions<ApiConfiguration> apiConfiguration, ILogger<KioskController> logger)
+	public KioskController(IKioskRepository kioskRepository, IHealthRepository heartbeatRepository, ITicketRepository ticketRepository, IOptions<ApiConfiguration> apiConfiguration, ILogger<KioskController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(kioskRepository);
 		ArgumentNullException.ThrowIfNull(heartbeatRepository);
@@ -223,10 +223,10 @@ public class KioskController : ControllerBase
 	// calculate health for each possible HeartbeatType
 	private async Task<HealthStatus> CalculateHealth(string kioskId, HeartbeatType heartbeatType, CancellationToken cancellationToken)
 	{
-		Heartbeat? lastHeartbeat;
+		Health? lastHeartbeat;
 		try
 		{
-			lastHeartbeat = await _heartbeatRepository.GetMostRecentHeartbeatOfTypeOrDefaultAsync(kioskId, heartbeatType, cancellationToken);
+			lastHeartbeat = await _heartbeatRepository.GetHeartbeatByIdentityAndTypeAsync(kioskId, heartbeatType, cancellationToken);
 
 		}
 		catch (Exception ex)

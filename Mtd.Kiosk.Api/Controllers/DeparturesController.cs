@@ -20,7 +20,7 @@ namespace Mtd.Kiosk.Api.Controllers;
 public class DeparturesController : ControllerBase
 {
 	private readonly RealTimeClient _realTimeClient;
-	private readonly IHeartbeatRepository _heartbeatRepository;
+	private readonly IHealthRepository _heartbeatRepository;
 	private readonly IKioskRepository _kioskRepository;
 	private readonly IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>> _routeRepository;
 	private readonly IMemoryCache _cache;
@@ -30,28 +30,28 @@ public class DeparturesController : ControllerBase
 	/// Constructor for the Departures controller.
 	/// </summary>
 	/// <param name="realTimeClient"></param>
-	/// <param name="heartbeatRepository"></param>
+	/// <param name="healthRepository"></param>
 	/// <param name="kioskRepository"></param>
 	/// <param name="routeRepository"></param>
 	/// <param name="cache"></param>
 	/// <param name="logger"></param>
 	public DeparturesController(
 		RealTimeClient realTimeClient,
-		IHeartbeatRepository heartbeatRepository,
+		IHealthRepository healthRepository,
 		IKioskRepository kioskRepository,
 		IRouteRepository<IReadOnlyCollection<Stopwatch.Core.Entities.Transit.Route>> routeRepository,
 		IMemoryCache cache,
 		ILogger<DeparturesController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(realTimeClient, nameof(realTimeClient));
-		ArgumentNullException.ThrowIfNull(heartbeatRepository, nameof(heartbeatRepository));
+		ArgumentNullException.ThrowIfNull(healthRepository, nameof(healthRepository));
 		ArgumentNullException.ThrowIfNull(kioskRepository, nameof(kioskRepository));
 		ArgumentNullException.ThrowIfNull(routeRepository, nameof(routeRepository));
 		ArgumentNullException.ThrowIfNull(cache, nameof(cache));
 		ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
 		_realTimeClient = realTimeClient;
-		_heartbeatRepository = heartbeatRepository;
+		_heartbeatRepository = healthRepository;
 		_kioskRepository = kioskRepository;
 		_routeRepository = routeRepository;
 		_cache = cache;
@@ -272,11 +272,28 @@ public class DeparturesController : ControllerBase
 			}
 		}
 
-		var heartbeat = new Heartbeat(kioskId, type);
+		Health? heartbeat = null;
+		try
+		{
+			heartbeat = await _heartbeatRepository.GetHeartbeatByIdentityAndTypeAsync(kioskId, type, CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to fetch heartbeat.");
+		}
+
+		if (heartbeat != null)
+		{
+			heartbeat.LastHeartbeat = DateTime.UtcNow;
+		}
+		else
+		{
+			heartbeat = new Health(kioskId, type);
+			await _heartbeatRepository.AddAsync(heartbeat, CancellationToken.None);
+		}
 
 		try
 		{
-			await _heartbeatRepository.AddAsync(heartbeat, CancellationToken.None);
 			await _heartbeatRepository.CommitChangesAsync(CancellationToken.None);
 		}
 		catch (Exception ex)

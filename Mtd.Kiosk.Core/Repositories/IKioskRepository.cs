@@ -1,6 +1,6 @@
 ﻿namespace Mtd.Kiosk.Core.Repositories;
 
-public interface IKioskRepository : IRepository<Entities.Kiosk>
+public interface IKioskRepository : IIdentityRepository<Entities.Kiosk>
 {
 
 	Task<Entities.Kiosk> GetByIdentityWithTicketsAsync(string identity, CancellationToken cancellationToken);

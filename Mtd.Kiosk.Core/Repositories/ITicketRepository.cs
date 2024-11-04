@@ -2,7 +2,7 @@
 
 namespace Mtd.Kiosk.Core.Repositories;
 
-public interface ITicketRepository : IRepository<Ticket>
+public interface ITicketRepository : IIdentityRepository<Ticket>
 {
 	Task<IReadOnlyCollection<Ticket>> GetByKioskIdAsync(string kioskId, CancellationToken cancellationToken);
 
