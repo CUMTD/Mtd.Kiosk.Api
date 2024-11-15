@@ -10,7 +10,8 @@ internal class HealthConfiguration : IEntityTypeConfiguration<Health>
 	{
 		_ = builder.ToTable("Health");
 
-		_ = builder.HasKey(k => k.KioskId);
+		_ = builder.HasKey(k => new { k.KioskId, k.Type });
+
 
 		_ = builder
 			.Property(k => k.LastHeartbeat)
