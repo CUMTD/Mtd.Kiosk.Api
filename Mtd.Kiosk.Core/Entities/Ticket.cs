@@ -1,11 +1,9 @@
 ﻿#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 using Mtd.Core.Entities;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Mtd.Kiosk.Core.Entities;
 
-[method: SetsRequiredMembers]
 public class Ticket() : GuidEntity(), IEntity
 {
 	public string KioskId { get; set; } = string.Empty;
@@ -18,7 +16,6 @@ public class Ticket() : GuidEntity(), IEntity
 	public virtual Kiosk Kiosk { get; set; }
 	public virtual ICollection<TicketNote> Notes { get; set; } = [];
 
-	[SetsRequiredMembers]
 	public Ticket(string kioskId, string openedBy, string title, string? description) : this()
 	{
 		KioskId = kioskId;

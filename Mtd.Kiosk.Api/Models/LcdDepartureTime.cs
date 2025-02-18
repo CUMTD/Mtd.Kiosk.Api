@@ -16,10 +16,39 @@ public class LcdDepartureTime(Departure departure)
 	private static readonly string[] _nonDestinationStrings = ["express"];
 
 	/// <summary>
-	/// The time of the departure. Can be "DUE", "1 min", "XX mins", or "HH:MM AM".
+	/// The time of the departure. Can be "DUE", "1 min", "XX mins", or "HH:MM XM".
 	/// </summary>
 	[JsonPropertyName("time")]
-	public string Time { get; set; } = departure.DepartsIn;
+	public string Time
+	{
+		get
+		{
+			if (!departure.IsRealTime)
+			{
+				return departure.ScheduledDeparture.ToString("h:mm tt");
+			}
+			else
+			{
+				return departure.DepartsIn;
+			}
+		}
+		set
+		{
+			// Do nothing
+		}
+	}
+
+	/// <summary>
+	/// The ID of the vehicle that will be making the departure. May be null if the vehicle is not known.
+	/// </summary>
+	[JsonPropertyName("vehicleId")]
+	public string? VehicleId { get; set; } = departure.VehicleId;
+
+	/// <summary>
+	/// The trip ID of the departure.
+	/// </summary>
+	[JsonPropertyName("tripId")]
+	public string? TripId { get; set; } = departure.TripId;
 
 	/// <summary>
 	/// Whether the departure is real-time or not.

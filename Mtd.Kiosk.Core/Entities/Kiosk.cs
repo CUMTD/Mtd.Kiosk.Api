@@ -1,10 +1,8 @@
 ﻿using Mtd.Core.Entities;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Mtd.Kiosk.Core.Entities;
 
-[method: SetsRequiredMembers]
 public class Kiosk() : GuidEntity, IEntity
 {
 	public bool Deleted { get; set; } = false;
@@ -12,8 +10,6 @@ public class Kiosk() : GuidEntity, IEntity
 
 	[JsonIgnore]
 	public virtual ICollection<Ticket> Tickets { get; set; } = [];
-
-	[SetsRequiredMembers]
 
 	public Kiosk(string guid) : this()
 	{
