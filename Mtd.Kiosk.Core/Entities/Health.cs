@@ -1,5 +1,4 @@
 ﻿using Mtd.Core.Entities;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Mtd.Kiosk.Core.Entities;
 
@@ -10,14 +9,12 @@ public class Health : IEntity
 	public HeartbeatType Type { get; set; }
 	public virtual Kiosk? Kiosk { get; set; }
 
-	[SetsRequiredMembers]
 	protected Health() : base()
 	{
 		KioskId = string.Empty;
 		LastHeartbeat = DateTime.UtcNow;
 	}
 
-	[SetsRequiredMembers]
 	public Health(string kioskId, HeartbeatType type) : this()
 	{
 		KioskId = kioskId;

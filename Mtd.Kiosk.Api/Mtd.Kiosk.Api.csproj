@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<AnalysisLevel>latest</AnalysisLevel>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -56,6 +56,21 @@
 		<ProjectReference Include="..\Mtd.Kiosk.Core\Mtd.Kiosk.Core.csproj" />
 		<ProjectReference Include="..\Mtd.Kiosk.Infrastructure.EfCore\Mtd.Kiosk.Infrastructure.EfCore.csproj" />
 		<ProjectReference Include="..\Mtd.Kiosk.RealTime\Mtd.Kiosk.RealTime.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Properties\Resources.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>Resources.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Properties\Resources.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 </Project>
