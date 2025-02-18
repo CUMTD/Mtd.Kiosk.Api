@@ -9,6 +9,7 @@ public class Health : IEntity
 	public HeartbeatType Type { get; set; }
 	public virtual Kiosk? Kiosk { get; set; }
 
+
 	protected Health() : base()
 	{
 		KioskId = string.Empty;

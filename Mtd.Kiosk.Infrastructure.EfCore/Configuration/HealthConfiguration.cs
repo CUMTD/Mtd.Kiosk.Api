@@ -12,6 +12,7 @@ internal class HealthConfiguration : IEntityTypeConfiguration<Health>
 
 		_ = builder.HasKey(k => new { k.KioskId, k.Type });
 
+
 		_ = builder
 			.Property(k => k.LastHeartbeat)
 			.IsRequired();
