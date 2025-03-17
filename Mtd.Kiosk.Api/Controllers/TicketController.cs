@@ -141,6 +141,16 @@ public class TicketController : ControllerBase
 		{
 			ticket = await _ticketRepository.GetByIdentityAsync(ticketId, cancellationToken);
 			ticket.Status = newStatus;
+			if (newStatus == TicketStatusType.Resolved)
+			{
+				ticket.CloseDate = DateTime.Now;
+			}
+
+			if (newStatus == TicketStatusType.Open)
+			{
+				ticket.CloseDate = null;
+			}
+
 			await _ticketRepository.CommitChangesAsync(cancellationToken);
 		}
 		catch (InvalidOperationException ex)
