@@ -255,8 +255,8 @@ public class KioskController : ControllerBase
 		_logger.LogTrace("Getting health for kiosk: {kioskId}", kioskId);
 
 		// TODO: implement this once buttons are sending heartbeats
-		var buttonHealth = HealthStatus.Unknown;
-		//var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
+		//var buttonHealth = HealthStatus.Unknown;
+		var buttonHealth = await CalculateHealth(kioskId, HeartbeatType.Button, cancellationToken);
 		var ledHealth = await CalculateHealth(kioskId, HeartbeatType.LED, cancellationToken);
 		var lcdHealth = await CalculateHealth(kioskId, HeartbeatType.LCD, cancellationToken);
 
