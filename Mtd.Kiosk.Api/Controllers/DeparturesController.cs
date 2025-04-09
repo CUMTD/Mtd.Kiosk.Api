@@ -6,6 +6,7 @@ using Mtd.Kiosk.Core.Entities;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.RealTime;
 using Mtd.Kiosk.RealTime.Entities;
+using Mtd.Stopwatch.Core.Entities.Transit;
 using Mtd.Stopwatch.Core.Repositories.Transit;
 using System.ComponentModel.DataAnnotations;
 
@@ -208,6 +209,51 @@ public class DeparturesController : ControllerBase
 			.ThenBy(lcdDeparture => lcdDeparture.IsAcrossStreet)];
 
 		return Ok(new LcdDepartureResponseModel(lcdDepartures));
+
+	}
+
+	/// <summary>
+	/// Get the next departures, formatted for an annunciator.
+	/// </summary>
+	/// <param name="stopId"></param>
+	/// <param name="kioskId"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	[HttpGet("{stopId}/annunciator")]
+	[ProducesResponseType<LcdDepartureResponseModel>(StatusCodes.Status200OK)]
+	[ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<AnnunciatorResponseModel>> GetAnnunciatorDepartures([StopId(true)] string stopId, [GuidId(false)] string kioskId, CancellationToken cancellationToken)
+	{
+		await LogHeartbeat(HeartbeatType.Button, kioskId);
+
+		Departure[]? realTimeClientDepartures;
+		try
+		{
+			realTimeClientDepartures = await _realTimeClient.GetRealTimeForStops([stopId], cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to get departures from real-time client for {stopId}.", stopId);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		if (realTimeClientDepartures == null)
+		{
+			_logger.LogError("Real-time client returned null for {stopId}.", stopId);
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
+		var departures = realTimeClientDepartures
+			.OrderBy(departure => departure.MinutesTillDeparture)
+			.ThenBy(departure => departure.RouteSortNumber)
+			.GroupBy(departure => new { departure.FriendlyRouteName, departure.Direction })
+			.Select(group => group.First())
+			.Select(departure => new AnnunciatorDeparture(departure));
+
+		return Ok(departures);
+
 	}
 
 	#region Helpers
