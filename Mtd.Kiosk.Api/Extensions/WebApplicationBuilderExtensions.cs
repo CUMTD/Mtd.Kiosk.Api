@@ -171,6 +171,8 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddScoped<IHealthRepository, HealthRepository>();
 		_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 		_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
+		_ = builder.Services.AddScoped<ITemperatureRepository, TemperatureRepository>();
+
 		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();
 
 		_ = builder.Services.AddMemoryCache();
