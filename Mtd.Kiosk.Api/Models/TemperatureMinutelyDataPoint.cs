@@ -7,7 +7,7 @@ namespace Mtd.Kiosk.Api.Models;
 /// For returning temp data to the frontend
 /// </summary>
 /// <param name="temperature"></param>
-public class TemperatureDataPoint(Temperature temperature)
+public class TemperatureMinutelyDataPoint(TemperatureMinutely temperature)
 {
 	/// <summary>
 	/// The temperature in Fahrenheit.
@@ -26,5 +26,11 @@ public class TemperatureDataPoint(Temperature temperature)
 	/// </summary>
 	[JsonPropertyName("timestamp")]
 	public long Timestamp { get; set; } = temperature.Timestamp.ToUnixTimeMilliseconds();
+
+	/// <summary>
+	/// The type of sensor that recorded the conditions.
+	/// </summary>
+	[JsonPropertyName("sensorType")]
+	public TemperatureSensorType SensorType { get; set; } = temperature.SensorType;
 
 }

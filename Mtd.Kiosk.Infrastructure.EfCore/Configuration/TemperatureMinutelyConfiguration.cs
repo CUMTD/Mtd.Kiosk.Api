@@ -4,15 +4,15 @@ using Mtd.Kiosk.Core.Entities;
 
 namespace Mtd.Kiosk.Infrastructure.EfCore.Configuration;
 
-internal class TemperatureConfiguration : IEntityTypeConfiguration<Temperature>
+internal class TemperatureMinutelyConfiguration : IEntityTypeConfiguration<TemperatureMinutely>
 {
-	public void Configure(EntityTypeBuilder<Temperature> builder)
+	public void Configure(EntityTypeBuilder<TemperatureMinutely> builder)
 	{
 		_ = builder
-			.ToTable("Temperature");
+			.ToTable("TemperatureMinutely");
 
 		_ = builder
-			.HasKey(t => new { t.KioskId, t.Timestamp });
+			.HasKey(t => new { t.KioskId, t.Timestamp, t.SensorType });
 
 		_ = builder
 			.Property(t => t.TempFahrenheit)
@@ -20,6 +20,10 @@ internal class TemperatureConfiguration : IEntityTypeConfiguration<Temperature>
 
 		_ = builder
 			.Property(t => t.RelHumidity)
+			.IsRequired();
+
+		_ = builder
+			.Property(t => t.SensorType)
 			.IsRequired();
 
 	}
