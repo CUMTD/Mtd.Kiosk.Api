@@ -13,21 +13,27 @@ namespace Mtd.Kiosk.Api.Controllers;
 [Route("temperature")]
 public class TemperatureController : ControllerBase
 {
-	private readonly ITemperatureRepository _temperatureRepository;
+	private readonly ITemperatureMinutelyRepository _temperatureRepository;
+	private readonly ITemperatureDailyRepository _temperatureDailyRepository;
 	private readonly ILogger<TemperatureController> _logger;
 
 	/// <summary>
 	/// Constructor for TemperatureController.
 	/// </summary>
 	/// <param name="temperatureRepository"></param>
+	/// <param name="temperatureDailyRepository"></param>
 	/// <param name="logger"></param>
 	public TemperatureController(
-		ITemperatureRepository temperatureRepository,
+		ITemperatureMinutelyRepository temperatureRepository,
+		ITemperatureDailyRepository temperatureDailyRepository,
 		ILogger<TemperatureController> logger)
 	{
 		ArgumentNullException.ThrowIfNull(temperatureRepository, nameof(temperatureRepository));
+		ArgumentNullException.ThrowIfNull(temperatureDailyRepository, nameof(temperatureDailyRepository));
+
 		ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 		_temperatureRepository = temperatureRepository;
+		_temperatureDailyRepository = temperatureDailyRepository;
 		_logger = logger;
 	}
 
@@ -37,6 +43,7 @@ public class TemperatureController : ControllerBase
 	/// <param name="kioskId"></param>
 	/// <param name="temp"></param>
 	/// <param name="humidity"></param>
+	/// <param name="sensorType"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
 	[HttpPost("{kioskId}")]
@@ -44,11 +51,11 @@ public class TemperatureController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<ActionResult> LogKioskConditions([FromRoute] string kioskId, [FromQuery] byte temp, [FromQuery] byte humidity, CancellationToken cancellationToken)
+	public async Task<ActionResult> LogKioskConditions([FromRoute] string kioskId, [FromQuery] byte temp, [FromQuery] byte humidity, [FromQuery] TemperatureSensorType sensorType, CancellationToken cancellationToken)
 	{
 		try
 		{
-			await _temperatureRepository.AddAsync(new Temperature(kioskId, temp, humidity), cancellationToken);
+			await _temperatureRepository.AddAsync(new TemperatureMinutely(kioskId, temp, humidity, sensorType), cancellationToken);
 			await _temperatureRepository.CommitChangesAsync(cancellationToken);
 			return Created();
 		}
@@ -67,13 +74,37 @@ public class TemperatureController : ControllerBase
 	[HttpGet("{kioskId}/recent")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<IReadOnlyCollection<TemperatureDataPoint>>> GetRecentTempHistory([FromRoute] string kioskId, CancellationToken cancellationToken)
+	public async Task<ActionResult<IReadOnlyCollection<TemperatureMinutelyDataPoint>>> GetRecentTempHistory([FromRoute] string kioskId, CancellationToken cancellationToken)
 	{
 		try
 		{
-			var temps = await _temperatureRepository.GetPastMonthTempsAsync(kioskId, cancellationToken);
+			var temps = await _temperatureRepository.GetTempsBetweenDatesAsync(kioskId, DateTimeOffset.Now.AddDays(-30).Date, DateTimeOffset.Now.Date, cancellationToken);
 			// convert to temp data points
-			var tempDataPoints = temps.Select(t => new TemperatureDataPoint(t)).ToArray();
+			var tempDataPoints = temps.Select(t => new TemperatureMinutelyDataPoint(t)).ToArray();
+			return Ok(tempDataPoints);
+		}
+		catch (Exception e)
+		{
+			return Problem(e.Message);
+		}
+	}
+
+	/// <summary>
+	/// Get the dailytemperature history for a kiosk.
+	/// </summary>
+	/// <param name="kioskId"></param>
+	/// <param name="cancellationToken"></param>
+	/// <returns></returns>
+	[HttpGet("{kioskId}/daily")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<ActionResult<IReadOnlyCollection<TemperatureMinutelyDataPoint>>> GetDailyTempHistory([FromRoute] string kioskId, CancellationToken cancellationToken)
+	{
+		try
+		{
+			var temps = await _temperatureDailyRepository.GetByKioskIdAsync(kioskId, cancellationToken);
+			// convert to temp data points
+			var tempDataPoints = temps.Select(t => new TemperatureDailyDataPoint(t)).ToArray();
 			return Ok(tempDataPoints);
 		}
 		catch (Exception e)

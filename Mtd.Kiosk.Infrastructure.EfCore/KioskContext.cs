@@ -19,7 +19,8 @@ public class KioskContext(DbContextOptions<KioskContext> options) : DbContext(op
 		modelBuilder.ApplyConfiguration(new KioskConfiguration());
 		modelBuilder.ApplyConfiguration(new TicketConfiguration());
 		modelBuilder.ApplyConfiguration(new TicketNoteConfiguration());
-		modelBuilder.ApplyConfiguration(new TemperatureConfiguration());
+		modelBuilder.ApplyConfiguration(new TemperatureMinutelyConfiguration());
+		modelBuilder.ApplyConfiguration(new TemperatureDailyConfiguration());
 
 	}
 }

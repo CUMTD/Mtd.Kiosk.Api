@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using Mtd.Kiosk.Api.Attributes;
 using Mtd.Kiosk.Api.Config;
 using Mtd.Kiosk.Api.Filters;
+using Mtd.Kiosk.Api.Services;
 using Mtd.Kiosk.Core.Repositories;
 using Mtd.Kiosk.Infrastructure.EfCore;
 using Mtd.Kiosk.Infrastructure.EfCore.Repository;
@@ -171,7 +172,11 @@ internal static class WebApplicationBuilderExtensions
 		_ = builder.Services.AddScoped<IHealthRepository, HealthRepository>();
 		_ = builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 		_ = builder.Services.AddScoped<ITicketNoteRepository, TicketNoteRepository>();
-		_ = builder.Services.AddScoped<ITemperatureRepository, TemperatureRepository>();
+		_ = builder.Services.AddScoped<ITemperatureMinutelyRepository, TemperatureMinutelyRepository>();
+		_ = builder.Services.AddScoped<ITemperatureDailyRepository, TemperatureDailyRepository>();
+
+		_ = builder.Services.AddScoped<ScopedTemperatureAggregatorWorker>();
+		_ = builder.Services.AddHostedService<TemperatureAggregatorWorker>();
 
 		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();
 
