@@ -12,64 +12,48 @@ public class ScopedTemperatureAggregatorWorker
 	private readonly ILogger<TemperatureAggregatorWorker> _logger;
 
 	/// <summary>
-	/// Constructor
+	/// Constructor for ScopedTemperatureAggregatorWorker.
 	/// </summary>
 	/// <param name="temperatureRepository"></param>
 	/// <param name="temperatureDailyRepository"></param>
 	/// <param name="logger"></param>
-	public ScopedTemperatureAggregatorWorker(ITemperatureMinutelyRepository temperatureRepository, ITemperatureDailyRepository temperatureDailyRepository, ILogger<TemperatureAggregatorWorker> logger)
+	public ScopedTemperatureAggregatorWorker(
+		ITemperatureMinutelyRepository temperatureRepository,
+		ITemperatureDailyRepository temperatureDailyRepository,
+		ILogger<TemperatureAggregatorWorker> logger)
 	{
 		_temperatureRepository = temperatureRepository;
 		_temperatureDailyRepository = temperatureDailyRepository;
 		_logger = logger;
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="cancellationToken"></param>
 	internal async Task DoWorkAsync(CancellationToken cancellationToken)
 	{
-		// number of days to keep minuely data 122
-		//var minutelyDataRetentionDays = 122;
-
-		//get all kiosk Ids that are logging temperature data (move this to sanity?)
-		var tempLoggingKiosks = await _temperatureRepository.GetTemperatureLoggingKioskIds(cancellationToken);
-
-		if (tempLoggingKiosks == null || tempLoggingKiosks.Count == 0)
+		var kioskIds = await _temperatureRepository.GetTemperatureLoggingKioskIds(cancellationToken);
+		if (kioskIds == null || kioskIds.Count == 0)
 		{
 			_logger.LogWarning("No minutely temp data found.");
 			return;
 		}
 
-		// for each kiosk id that's logging temperature...
-		foreach (var kioskId in tempLoggingKiosks)
+		foreach (var kioskId in kioskIds)
 		{
-			// get the unique days that have data
 			var uniqueDays = await _temperatureRepository.GetUniqueDaysWithDataByKioskId(kioskId, cancellationToken);
+			var daysToAggregate = uniqueDays.Where(d => d.Date != DateTime.Now.Date);
 
-			// drop today's date
-			uniqueDays = uniqueDays.Where(d => d.Date != DateTime.Now.Date).ToArray();
+			var existingDaily = await _temperatureDailyRepository.GetByKioskIdAsync(kioskId, cancellationToken);
+			var existingDates = existingDaily.Select(td => td.Date.Date).ToHashSet();
 
-			// for each day with data...
-			foreach (var day in uniqueDays)
+			foreach (var day in daysToAggregate)
 			{
+				if (existingDates.Contains(day.Date))
+					continue;
 
-				// if data has already been aggregated, delete the minutely data
-				if (await _temperatureDailyRepository.AnyAsync(td => td.Date != day, cancellationToken))
-				{
-					var aggregatedTempData = await _temperatureRepository.AggregateDayData(kioskId, day, cancellationToken);
-					if (aggregatedTempData != null)
-					{
-						await _temperatureDailyRepository.AddAsync(aggregatedTempData, cancellationToken);
-
-					}
-					else
-					{
-						_logger.LogWarning("Data aggregation returned null.");
-					}
-				}
-				//}
+				var aggregated = await _temperatureRepository.AggregateDayData(kioskId, day, cancellationToken);
+				if (aggregated != null)
+					await _temperatureDailyRepository.AddAsync(aggregated, cancellationToken);
+				else
+					_logger.LogWarning("Data aggregation returned null for kiosk {KioskId} on {Day}.", kioskId, day);
 			}
 		}
 
