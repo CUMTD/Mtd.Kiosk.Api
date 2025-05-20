@@ -11,7 +11,7 @@ public class TemperatureMinutelyRepository(KioskContext context) : AsyncEFReposi
 	{
 		var query = _dbSet.Where(t => t.KioskId == kioskId && t.Timestamp.Date == date.Date);
 
-		if (!query.Any())
+		if (!await query.AnyAsync())
 		{
 			return null;
 		}
@@ -27,9 +27,9 @@ public class TemperatureMinutelyRepository(KioskContext context) : AsyncEFReposi
 		return new TemperatureDaily(kioskId, date, tempMin, tempMax, tempAvg, relHumidityMin, relHumidityMax, relHumidityAvg);
 	}
 
-	public void DeleteDataByDate(DateTime date, CancellationToken cancellationToken)
+	public async Task DeleteDataByDate(DateTime date, CancellationToken cancellationToken)
 	{
-		_dbSet.Where(td => td.Timestamp.Date == date.Date).ExecuteDeleteAsync(cancellationToken);
+		await _dbSet.Where(td => td.Timestamp.Date == date.Date).ExecuteDeleteAsync(cancellationToken);
 	}
 
 	public async Task<IReadOnlyCollection<TemperatureMinutely>> GetDayDataAsync(string kioskId, DateTime date, CancellationToken cancellationToken)
@@ -38,10 +38,11 @@ public class TemperatureMinutelyRepository(KioskContext context) : AsyncEFReposi
 		return temps;
 	}
 
-	public async Task<IReadOnlyCollection<TemperatureMinutely>> GetPastMonthTempsAsync(string kioskId, CancellationToken cancellationToken)
+	public async Task<IReadOnlyCollection<TemperatureMinutely>> GetTempsBetweenDatesAsync(string kioskId, DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken)
 	{
 
-		var temps = await _dbSet.Where(t => t.Timestamp >= DateTimeOffset.UtcNow.AddDays(-30) && t.KioskId == kioskId)
+		var temps = await _dbSet
+			.Where(t => t.KioskId == kioskId && t.Timestamp >= start && t.Timestamp <= end)
 			.OrderBy(t => t.Timestamp)
 			.ToArrayAsync(cancellationToken);
 
@@ -65,4 +66,6 @@ public class TemperatureMinutelyRepository(KioskContext context) : AsyncEFReposi
 
 		return days;
 	}
+
+	public Task<IReadOnlyCollection<TemperatureMinutely>> GetPastMonthTempsAsync(string kioskId, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

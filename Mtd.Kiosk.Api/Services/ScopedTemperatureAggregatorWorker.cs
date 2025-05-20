@@ -51,27 +51,12 @@ public class ScopedTemperatureAggregatorWorker
 			// drop today's date
 			uniqueDays = uniqueDays.Where(d => d.Date != DateTime.Now.Date).ToArray();
 
-			////if all days are within the range, continue
-			//if (uniqueDays.All(t => t.Date >= DateTime.Now.AddDays(-minutelyDataRetentionDays)))
-			//{
-			//	continue;
-			//}
-
 			// for each day with data...
 			foreach (var day in uniqueDays)
 			{
 
-				// if the day is far enough back...
-				//var timeSpan = DateTime.Now.Subtract(day);
-				//if (timeSpan.Days > minutelyDataRetentionDays)
-				//{
-
 				// if data has already been aggregated, delete the minutely data
-				if (await _temperatureDailyRepository.AnyAsync(td => td.Date == day, cancellationToken))
-				{
-					//_temperatureRepository.DeleteDataByDate(day, cancellationToken);
-				}
-				else
+				if (await _temperatureDailyRepository.AnyAsync(td => td.Date != day, cancellationToken))
 				{
 					var aggregatedTempData = await _temperatureRepository.AggregateDayData(kioskId, day, cancellationToken);
 					if (aggregatedTempData != null)

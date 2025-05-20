@@ -78,7 +78,7 @@ public class TemperatureController : ControllerBase
 	{
 		try
 		{
-			var temps = await _temperatureRepository.GetPastMonthTempsAsync(kioskId, cancellationToken);
+			var temps = await _temperatureRepository.GetTempsBetweenDatesAsync(kioskId, DateTimeOffset.Now.AddDays(-30).Date, DateTimeOffset.Now.Date, cancellationToken);
 			// convert to temp data points
 			var tempDataPoints = temps.Select(t => new TemperatureMinutelyDataPoint(t)).ToArray();
 			return Ok(tempDataPoints);

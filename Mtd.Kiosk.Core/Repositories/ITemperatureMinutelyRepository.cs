@@ -5,8 +5,6 @@ namespace Mtd.Kiosk.Core.Repositories;
 public interface ITemperatureMinutelyRepository : IRepository<TemperatureMinutely>
 {
 
-	Task<IReadOnlyCollection<TemperatureMinutely>> GetPastMonthTempsAsync(string kioskId, CancellationToken cancellationToken);
-
 	Task<IReadOnlyCollection<TemperatureMinutely>> GetDayDataAsync(string kioskId, DateTime date, CancellationToken cancellationToken);
 	Task<IReadOnlyCollection<string>> GetTemperatureLoggingKioskIds(CancellationToken cancellationToken);
 
@@ -14,6 +12,8 @@ public interface ITemperatureMinutelyRepository : IRepository<TemperatureMinutel
 
 	Task<IReadOnlyCollection<DateTime>> GetUniqueDaysWithDataByKioskId(string kioskId, CancellationToken cancellationToken);
 
-	void DeleteDataByDate(DateTime date, CancellationToken cancellationToken);
+	Task DeleteDataByDate(DateTime date, CancellationToken cancellationToken);
+
+	Task<IReadOnlyCollection<TemperatureMinutely>> GetTempsBetweenDatesAsync(string kioskId, DateTimeOffset start, DateTimeOffset end, CancellationToken cancellationToken);
 
 }

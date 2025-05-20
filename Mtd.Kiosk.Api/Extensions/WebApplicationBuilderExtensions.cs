@@ -102,7 +102,6 @@ internal static class WebApplicationBuilderExtensions
 
 		_ = builder.Services.AddEndpointsApiExplorer();
 
-
 		_ = builder.Services.AddSwaggerGen(options =>
 		{
 			options.SwaggerDoc($"v1.0", new OpenApiInfo
@@ -178,8 +177,6 @@ internal static class WebApplicationBuilderExtensions
 
 		_ = builder.Services.AddScoped<ScopedTemperatureAggregatorWorker>();
 		_ = builder.Services.AddHostedService<TemperatureAggregatorWorker>();
-
-		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();
 
 		_ = builder.Services.AddScoped<IpDisplaysApiClientFactory>();
 
